@@ -34,6 +34,11 @@
     "copy-webpack-plugin": "^5.0.0"
   },
   "dependencies": {
-    "graph": "file:../pkg"
+    "bootstrap": "4.4",
+    "graph": "file:../pkg",
+    "jquery": "3.4.1",
+    "vega": "^5.10.0",
+    "vega-embed": "^6.5.2",
+    "vega-lite": "4.8.1"
   }
 }
