@@ -24,7 +24,7 @@ const FAMILY_SIZE_WEIGHTS:[f64; 5] = [25.5, 30.4, 20.8, 17.5, 5.7];
 
 const HEALTHY_INFECTED_PROFILE:[f64; 23] = [0., 0.003, 0.005, 0.01, 0.01, 0.01, 0.01, 0.02, 0.05, 0.05, 0.05, 0.07, 0.07, 0.07, 0.05, 0.05, 0.05, 0.05, 0.02, 0.01, 0.005, 0.003, 0.001];
 
-const INFECTED_DETECTED_PROFILE:[f64; 18] = [0., 0., 0., 0.01, 0.02, 0.03, 0.05, 0.7, 0.10, 0.10, 0.15, 0.10, 0.10, 0.10, 0.07, 0.05, 0.02, 0.01];
+const INFECTED_DETECTED_PROFILE:[f64; 18] = [0., 0., 0., 0.01, 0.02, 0.03, 0.05, 0.07, 0.10, 0.10, 0.15, 0.10, 0.10, 0.10, 0.07, 0.05, 0.02, 0.01];
 
 const INFECTED_CRITICAL_PROFILE:[f64;14] = [0. ,0. ,0. ,0.,0.,0., 0., 0., 0.01, 0.02, 0.05, 0.03, 0.02, 0.01];
 
@@ -44,7 +44,6 @@ const WORKPLACE_CONTACT_DETECTED_COEF: f64 = 0.05;
 
 const WORLD_CONTACT_INFECTED_COEF: f64 = 0.15;
 const WORLD_CONTACT_DETECTED_COEF: f64 = 0.01;
-
 
 
 
@@ -93,23 +92,28 @@ impl State{
 
 
 struct Graph{
-    nodes: Vec<Vec<usize>>,
+    left_nodes: Vec<Vec<usize>>,
+    right_nodes: Vec<Vec<usize>>,
 }
 
 impl Graph{
     fn new () -> Graph{
-        let nodes:Vec<Vec<usize>> = Vec::new();
-        Graph{nodes}
+        let left_nodes = Vec::new();
+        let right_nodes = Vec::new();
+        Graph{left_nodes, right_nodes}
     }
     fn register_node(&mut self) -> usize{
-        self.nodes.push(vec![]);
-        return self.nodes.len() - 1;
+        self.left_nodes.push(vec![]);
+        self.right_nodes.push(vec![]);
+        return self.left_nodes.len() - 1;
     }
     fn add_link(&mut self, i:usize, j:usize) -> Option<()>{
         if j < i{
-            self.nodes.get_mut(i)?.push(j);
+            self.left_nodes.get_mut(i)?.push(j);
+            self.right_nodes.get_mut(j)?.push(i);
         }else{
-            self.nodes.get_mut(j)?.push(i);
+            self.left_nodes.get_mut(j)?.push(i);
+            self.right_nodes.get_mut(i)?.push(j);
         }
         Some(())
     }
@@ -146,6 +150,7 @@ pub struct Simulation {
     world_graph: Graph,
     counter: Counter,
     states: Vec<State>,
+    hospital_capacity: i32,
 }
 
 
@@ -153,7 +158,14 @@ pub struct Simulation {
 #[wasm_bindgen]
 impl Simulation{
 
-    pub fn new(approximate_population:usize, nworkplaces:usize, initial_infected_chance: f64, workplace_connectivity: f64, average_universe_connections: usize) -> Simulation{
+    pub fn new(
+            approximate_population:usize,
+            nworkplaces:usize,
+            initial_infected_chance: f64,
+            workplace_connectivity: f64,
+            average_universe_connections: usize,
+            hospital_capacity: i32
+        ) -> Simulation{
         utils::set_panic_hook();
 
         let mut rng = rand::thread_rng();
@@ -220,7 +232,7 @@ impl Simulation{
 
 
         }
-        Simulation{family_graph, workplace_graph, world_graph, counter, states}
+        Simulation{family_graph, workplace_graph, world_graph, counter, states, hospital_capacity}
     }
 
 
@@ -339,6 +351,11 @@ impl Simulation{
     }
 
     fn transit_severe(&mut self, t:usize) -> State{
+        if self.counter[&State::Severe(0).name()] > self.hospital_capacity{
+            let s = State::Dead;
+            self.counter.transit(State::Severe(0), State::Dead);
+            return s;
+        }
         let opts =  [State::Inmune(0),                       State::Dead,                          State::Severe(t+1)];
         let w =     [sat_index(&CRITICAL_INMUNE_PROFILE, t), sat_index(&CRITICAL_DEATH_PROFILE, t)];
         let s = Simulation::sample_state(&opts, &w);
@@ -368,16 +385,4 @@ extern {
     fn alert(s: &str);
 }
 
-#[wasm_bindgen]
-pub fn greet() {
-    let mut s = Simulation::new(300000, 2000, 0.0001, 0.8, 100);
-    log!("Initilized simulation with {} nodes, {} healthy and {} infected", s.len(), s.counter.get(&State::Healthy.name()).unwrap(), s.counter.get(&State::Infected(0).name()).unwrap());
-    let mut day = 0;
-    loop{
-        day +=1;
-        s.tick();
-        log!("Day {} simulation {:?}", day, s.counter);
-    }
-    //alert("Hello, graph!");
-}
 
