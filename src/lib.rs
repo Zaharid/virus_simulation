@@ -126,12 +126,17 @@ type Counter = HashMap<&'static str, i32>;
 trait Count {
     fn register(&mut self, s:State);
     fn transit(&mut self, from:State, to:State);
+    fn state_count(&self, s:State) -> i32;
 }
 
 impl Count for Counter{
     fn register(&mut self, s:State){
         let v = self.entry(s.name()).or_insert(0);
         *v += 1;
+    }
+
+    fn state_count(&self, s:State) ->i32{
+        *self.get(s.name()).unwrap_or(&0)
     }
 
     fn transit(&mut self, from:State, to:State){
@@ -163,7 +168,7 @@ impl Simulation{
             nworkplaces:usize,
             initial_infected_chance: f64,
             workplace_connectivity: f64,
-            average_universe_connections: usize, 
+            average_universe_connections: usize,
             hospital_capacity: i32
         ) -> Simulation{
         utils::set_panic_hook();
@@ -334,7 +339,8 @@ impl Simulation{
     }
 
     fn transit_severe(&mut self, t:usize) -> State{
-        if self.counter[&State::Severe(0).name()] > self.hospital_capacity{
+
+        if self.counter.state_count(State::Severe(0)) > self.hospital_capacity{
             let s = State::Dead;
             self.counter.transit(State::Severe(0), State::Dead);
             return s;
