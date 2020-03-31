@@ -163,7 +163,7 @@ impl Simulation{
             nworkplaces:usize,
             initial_infected_chance: f64,
             workplace_connectivity: f64,
-            average_universe_connections: usize,
+            average_universe_connections: usize, 
             hospital_capacity: i32
         ) -> Simulation{
         utils::set_panic_hook();
@@ -245,10 +245,8 @@ impl Simulation{
             let newstate = match s{
                 State::Healthy => self.get_infected(i),
                 State::Infected(t) => {
-                    self.infect_others(i, t, FAMILY_CONTACT_INFECTED_COEF, WORKPLACE_CONTACT_INFECTED_COEF, WORLD_CONTACT_INFECTED_COEF, &mut newstates);
                     self.transit_infected(t)},
                 State::Detected(t) => {
-                    self.infect_others(i, t, FAMILY_CONTACT_DETECTED_COEF, WORKPLACE_CONTACT_DETECTED_COEF, WORLD_CONTACT_DETECTED_COEF, &mut newstates);
                     self.transit_detected(t)},
                 State::Severe(t) => self.transit_severe(t),
                 State::Inmune(t) => self.transit_inmune(t),
@@ -276,7 +274,10 @@ impl Simulation{
 
     fn get_infected(&mut self, i:usize) -> State{
         //TODO: Optimize this and avoid repetition
-        let do_infect = |nodes: &[usize], infected_coef:f64, detected_coef: f64, counter: &mut Counter, states: &[State]|{
+        let do_infect = |g: &Graph, i:usize, infected_coef:f64, detected_coef: f64, counter: &mut Counter, states: &[State]|{
+            let nodes = g.left_nodes[i]
+                .iter()
+                .chain(g.right_nodes[i].iter());
             for n in nodes{
                 let connected_state = states[*n];
                 let become_infected = match connected_state{
@@ -293,36 +294,17 @@ impl Simulation{
             None
         };
 
-        if let Some(s) = do_infect(&self.family_graph.nodes[i], FAMILY_CONTACT_INFECTED_COEF, FAMILY_CONTACT_DETECTED_COEF, &mut self.counter, &self.states){
+        if let Some(s) = do_infect(&self.family_graph,i , FAMILY_CONTACT_INFECTED_COEF, FAMILY_CONTACT_DETECTED_COEF, &mut self.counter, &self.states){
             s
-        }else if let Some(s) = do_infect(&self.workplace_graph.nodes[i], WORKPLACE_CONTACT_INFECTED_COEF, WORKPLACE_CONTACT_DETECTED_COEF, &mut self.counter, &self.states){
+        }else if let Some(s) = do_infect(&self.workplace_graph, i, WORKPLACE_CONTACT_INFECTED_COEF, WORKPLACE_CONTACT_DETECTED_COEF, &mut self.counter, &self.states){
             s
-        }else if let Some(s) = do_infect(&self.world_graph.nodes[i], WORLD_CONTACT_INFECTED_COEF, WORLD_CONTACT_DETECTED_COEF, &mut self.counter, &self.states){
+        }else if let Some(s) = do_infect(&self.world_graph, i, WORLD_CONTACT_INFECTED_COEF, WORLD_CONTACT_DETECTED_COEF, &mut self.counter, &self.states){
             s
         }else{
             State::Healthy
         }
     }
 
-    fn infect_others(&mut self, i: usize, t:usize, family_coef: f64, workplace_coef: f64, world_coef: f64, newstates: &mut Vec<State>){
-
-        let mut do_infect = |nodes: &[usize], coef: f64, counter: &mut Counter|{
-            for n in nodes{
-                let connected_state = newstates.get_mut(*n).unwrap();
-                if let State::Healthy = connected_state{
-                    if coef*sat_index(&HEALTHY_INFECTED_PROFILE, t) > rand::random(){
-                        let ns = State::Infected(0);
-                        counter.transit(State::Healthy, ns);
-                        *connected_state = ns;
-                    }
-                }
-            }
-        };
-        do_infect(&self.family_graph.nodes[i], family_coef, &mut self.counter);
-        do_infect(&self.workplace_graph.nodes[i], workplace_coef, &mut self.counter);
-        do_infect(&self.world_graph.nodes[i], world_coef, &mut self.counter);
-
-    }
 
     fn sample_state(states: &[State], weights: &[f64]) -> State{
         let mut weights = weights.to_vec();
