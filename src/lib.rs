@@ -22,7 +22,7 @@ const DEFAULT_FAMILY_SIZES:[usize; 5] = [1, 2, 3, 4, 5];
 const FAMILY_SIZE_WEIGHTS:[f64; 5] = [25.5, 30.4, 20.8, 17.5, 5.7];
 
 
-const HEALTHY_INFECTED_PROFILE:[f64; 23] = [0., 0.003, 0.005, 0.01, 0.01, 0.01, 0.01, 0.02, 0.05, 0.05, 0.05, 0.07, 0.07, 0.07, 0.05, 0.05, 0.05, 0.05, 0.02, 0.01, 0.005, 0.003, 0.001];
+const SUSCEPTIBLE_INFECTED_PROFILE:[f64; 23] = [0., 0.003, 0.005, 0.01, 0.01, 0.01, 0.01, 0.02, 0.05, 0.05, 0.05, 0.07, 0.07, 0.07, 0.05, 0.05, 0.05, 0.05, 0.02, 0.01, 0.005, 0.003, 0.001];
 
 const INFECTED_DETECTED_PROFILE:[f64; 18] = [0., 0., 0., 0.01, 0.02, 0.03, 0.05, 0.07, 0.10, 0.10, 0.15, 0.10, 0.10, 0.10, 0.07, 0.05, 0.02, 0.01];
 
@@ -34,7 +34,7 @@ const CRITICAL_DEATH_PROFILE:[f64;5] = [0., 0.01, 0.01, 0.02, 0.05];
 
 const CRITICAL_INMUNE_PROFILE:[f64;10] = [0., 0., 0., 0., 0., 0., 0.03, 0.04, 0.07, 0.1];
 
-const INMUNE_HEALTHY_PROFILE: [f64; 30] = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0.00189723];
+const INMUNE_SUSCEPTIBLE_PROFILE: [f64; 30] = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0. ,0.00189723];
 
 const FAMILY_CONTACT_INFECTED_COEF:f64 = 1.;
 const FAMILY_CONTACT_DETECTED_COEF: f64 = 0.3;
@@ -69,7 +69,7 @@ fn sample_family_size(index: &WeightedIndex<f64>) -> usize{
 
 #[derive(Clone, Copy)]
 enum State{
-    Healthy,
+    Susceptible,
     Infected(usize),
     Detected(usize),
     Severe(usize),
@@ -80,7 +80,7 @@ enum State{
 impl State{
     fn name(&self) -> &'static str{
         match self{
-            State::Healthy => "Healthy",
+            State::Susceptible => "Susceptible",
             State::Infected(_) => "Infected (Undetected)",
             State::Detected(_) => "Infected (Detected)",
             State::Severe(_) => "Severe",
@@ -222,7 +222,7 @@ impl Simulation{
                 {
                     State::Infected(0)
                 }else{
-                    State::Healthy
+                    State::Susceptible
                 };
                 counter.register(s);
                 states.push(s);
@@ -239,11 +239,12 @@ impl Simulation{
     pub fn tick(&mut self){
         let mut newstates:Vec<State> = Vec::with_capacity(self.states.len());
 
+
         //Don't iterate over state here so we can mutably borrow `self` later
         for i in 0..self.states.len(){
             let s = self.states[i];
             let newstate = match s{
-                State::Healthy => self.get_infected(i),
+                State::Susceptible => self.get_infected(i),
                 State::Infected(t) => {
                     self.transit_infected(t)},
                 State::Detected(t) => {
@@ -281,13 +282,13 @@ impl Simulation{
             for n in nodes{
                 let connected_state = states[*n];
                 let become_infected = match connected_state{
-                    State::Infected(t) => infected_coef*sat_index(&HEALTHY_INFECTED_PROFILE, t) > rand::random(),
-                    State::Detected(t) => detected_coef*sat_index(&HEALTHY_INFECTED_PROFILE, t) > rand::random(),
+                    State::Infected(t) => infected_coef*sat_index(&SUSCEPTIBLE_INFECTED_PROFILE, t) > rand::random(),
+                    State::Detected(t) => detected_coef*sat_index(&SUSCEPTIBLE_INFECTED_PROFILE, t) > rand::random(),
                     _ => false
                 };
                 if become_infected{
                     let ns  = State::Infected(0);
-                    counter.transit(State::Healthy, ns);
+                    counter.transit(State::Susceptible, ns);
                     return Some(ns)
                 }
             }
@@ -301,7 +302,7 @@ impl Simulation{
         }else if let Some(s) = do_infect(&self.world_graph, i, WORLD_CONTACT_INFECTED_COEF, WORLD_CONTACT_DETECTED_COEF, &mut self.counter, &self.states){
             s
         }else{
-            State::Healthy
+            State::Susceptible
         }
     }
 
@@ -346,8 +347,8 @@ impl Simulation{
     }
 
     fn transit_inmune(&mut self, t: usize) -> State{
-        let opts = [State::Healthy,                       State::Inmune(t+1)];
-        let w =    [sat_index(&INMUNE_HEALTHY_PROFILE, t)];
+        let opts = [State::Susceptible,                       State::Inmune(t+1)];
+        let w =    [sat_index(&INMUNE_SUSCEPTIBLE_PROFILE, t)];
         let s = Simulation::sample_state(&opts, &w);
         self.counter.transit(State::Inmune(0), s);
         s
