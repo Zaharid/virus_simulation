@@ -1,4 +1,6 @@
-import {Simulation} from  "../pkg/index.js";
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 import vegaEmbed from 'vega-embed'
 
@@ -7,6 +9,9 @@ const plot_display = document.getElementById("vis");
 const severe_display = document.getElementById("severe-vis");
 const playPauseButton = document.getElementById("play-pause");
 
+
+let view = null;
+let severe_view = null;
 
 const categories = ["Severe", "Dead", "Infected (Undetected)", "Infected (Detected)", "Inmune", "Susceptible"];
 
@@ -95,56 +100,16 @@ const severe_spec = {"$schema": "https://vega.github.io/schema/vega-lite/v4.json
 
 let plot_values = []; //spec["data"]["values"];
 
+let worker = new Worker("./worker.js");
 
-let simulation = null;
-let animationId = null;
+let initialized = false;
 
-function isPaused(){
-	return animationId === null;
-}
-
-async function play(){
-	if (simulation === null){
-		await init();
-	}
-	playPauseButton.textContent = "⏸";
-	renderLoop();
-}
-
-function pause(){
-	playPauseButton.textContent = "▶";
-	cancelAnimationFrame(animationId);
-    animationId = null;
-}
-
-playPauseButton.addEventListener("click", event => {
-	if (isPaused()){
-		play();
-	}else{
-		pause();
-	}
-})
-
-
-let view = null;
-let severe_view = null;
-
-let time = 0;
-
-function push_counter(){
-	let counter_output = simulation.get_counter();
-	//Todo find a better way to represent plotting data
-	for (let [key, value] of Object.entries(counter_output)){
-		plot_values.push({"time": time, "population": key, "value": value});
-	}
-	display.innerHTML = JSON.stringify(counter_output, null, 4);
-	time++;
-}
+let isPaused = true;
+let isStarted = false;
 
 async function init(){
 	display.innerHTML = "Preparing simulation...";
-	simulation = Simulation.new(300000, 2000, 0.0001, 0.8, 20, 30000000);
-	push_counter();
+	worker.postMessage({"type": "INIT", "args": [300000, 2000, 0.0001, 0.8, 20, 2000]});
 	const opts = {"mode": "vega-lite", "padding":{"left": 20, "top": 5, right: 5, "bottom": 20}, "actions": false};
 	view = (
 		await vegaEmbed(
@@ -164,15 +129,70 @@ async function init(){
 
 }
 
-
-
-const renderLoop = () => {
-	simulation.tick();
-	push_counter();
-	animationId = requestAnimationFrame(renderLoop);
-	view.insert("mydata", plot_values).run();
-	severe_view.insert("mydata", plot_values).run();
-
+function play(event){
+	if (!isStarted){
+		init();
+		event.target.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span class="sr-only">Loading...</span>`;
+		isStarted = true;
+	}else{
+		worker.postMessage({"type": "RESUME"});
+	}
+	playPauseButton.disabled = true;
 }
 
+function pause(event){
+	worker.postMessage({"type": "PAUSE"});
+	playPauseButton.disabled = true;
+}
+
+
+
+
+
+playPauseButton.addEventListener("click", event => {
+	if (isPaused){
+		play(event);
+	}else{
+		pause(event);
+	}
+})
+
+
+function push_counter(data){
+	let counter_output = data.counter_output;
+	//Todo find a better way to represent plotting data
+	for (let [key, value] of Object.entries(counter_output)){
+		plot_values.push({"time": data.time, "population": key, "value": value});
+	}
+}
+
+
 playPauseButton.textContent = "▶";
+
+function handleIncomingData(data){
+	push_counter(data);
+	display.innerHTML = JSON.stringify(data.counter_output, null, 4);
+	view.insert("mydata", plot_values).run();
+	severe_view.insert("mydata", plot_values).run();
+}
+
+worker.onmessage = function(e){
+	let msg = e.data;
+	let tp = msg.type;
+	switch (tp){
+		case "STARTED":
+		    isPaused = false;
+			playPauseButton.textContent = "⏸";
+			playPauseButton.disabled = false;
+
+		    break;
+		case "COUNTER_DATA":
+			 handleIncomingData(msg.args);
+		     break;
+		case "STOPPED":
+		    isPaused = true;
+			playPauseButton.textContent = "▶";
+			playPauseButton.disabled = false;
+			break;
+	}
+}
