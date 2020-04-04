@@ -1,61 +1,327 @@
-<!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="description" content="An amateur virus propagation simulation, for educational purposes.">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="An amateur virus propagation simulation, for educational purposes.">
     <meta name="author" content="Zahari Kassabov">
     <title>Virus propagation simulation</title>
-	<style>
+    <style>
+        footer {
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+        }
 
-	footer {
-	  padding-top: 3rem;
-	  padding-bottom: 3rem;
-	}
+        fieldset fieldset {
+            margin-left: 3rem;
+            margin-right: 3rem;
+        }
 
-	footer p {
-	  margin-bottom: .25rem;
-	}
-	</style>
-  </head>
-  <body>
-    <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
-	<main >
-	    <section class="jumbotron text-center">
-			<h1> A virus propagation simuation</h1>
-			<p class="lead">
-			Test the effect of public health policies on a simple model.
-			</p>
-			<p class="lead">
-			Explore the dependency on the assumptions.
-			</p>
-			<button id="play-pause" class="btn btn-primary btn-lg"></button>
-		</section>
-		<div class="py-5 bg-light">
-			<div class="container">
-				<div class="row">
-					<div class="col">
-						<div id="vis"></div>
-					</div>
-					<div class="col">
-						<div id="vis-severe"></div>
-					</div>
+        footer p {
+            margin-bottom: .25rem;
+        }
 
-				</div>
-				<div class="row">
+        .time-profile-vis {
+            width: 100%;
+            margin: 20px;
+        }
 
-					<div class="col">
-						<pre id="display" class="text-center">Setting up simulation. This may take a while and eat your resouces!</pre>
-					</div>
-				</div>
-			</div>
-		</div>
-	</main>
-  <footer class="text-muted">
-	  <div class="container">
-	  Zahari Kassabov
-	  </div>
-  </footer>
-  <script src="./index.js"></script>
-  </body>
+        /*
+       Disable spinners https://stackoverflow.com/questions/3790935/can-i-hide-the-html5-number-input-s-spin-box
+     */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            /* display: none; <- Crashes Chrome on hover */
+            -webkit-appearance: none;
+            margin: 0;
+            /* <-- Apparently some margin are still there even though it's hidden */
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+            /* Firefox */
+        }
+    </style>
+</head>
+
+<body>
+    <noscript>This page contains webassembly and javascript content, please enable javascript in your
+        browser.</noscript>
+    <main>
+        <section class="jumbotron text-center">
+            <h1> A virus propagation simuation</h1>
+            <p class="lead">
+                Test the effect of public health policies on a simple model.
+            </p>
+            <p class="lead">
+                Explore the dependency on the assumptions <button class="btn btn-secondary" type="button"
+                    data-toggle="collapse" data-target="#configure-collapse" aria-expanded="false"
+                    aria-controls="configure-collapse">Configure Simulation</button>
+            </p>
+            <div class="collapse" id="configure-collapse">
+                <div class="container">
+                    <div class="card-body">
+                        <form id="configure-form" class="was-validated" novalidate>
+                            <fieldset class="border">
+                                <legend class="w-auto">Virus Characteristics</legend>
+                                <div class="form-group time-profile-group">
+                                    <label for=susceptible-infected-profile>Infectablity profile</label>
+                                    <input id="susceptible-infected-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                        title="Probability that an infected person spreads the disease to each contact on a given day, further weighted by the stregths defined below. The last value is repeated indefinitely." required>
+                                    <div class="invalid-feedback">
+                                        Please enter a coma separated list of numbers between 0 and 1.
+                                    </div>
+                                    <div id="susceptible-infected-vis" class="time-profile-vis"></div>
+                                </div>
+                                <div class="form-group time-profile-group">
+                                    <label for=infected-detected-profile>Detection profile</label>
+                                    <input id="infected-detected-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                        title="Probability per day that an undetected infected patient will be detected." required>
+                                    <div class="invalid-feedback">
+                                        Please enter a coma separated list of numbers between 0 and 1.
+                                    </div>
+                                    <div id="infected-detected-vis" class="time-profile-vis"></div>
+                                </div>
+                                <div class="form-group time-profile-group">
+                                    <label for=infected-severe-profile>Worsening profile</label>
+                                    <input id="infected-severe-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                        title="Probability per day that an infected patient becomes critical and requires hospitalization." required>
+                                    <div class="invalid-feedback">
+                                        Please enter a coma separated list of numbers between 0 and 1.
+                                    </div>
+                                    <div id="infected-severe-vis" class="time-profile-vis"></div>
+                                </div>
+                                <div class="form-group time-profile-group">
+                                    <label for=infected-inmune-profile>Infected healing profile</label>
+                                    <input id="infected-inmune-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                        title="Probability per day that an infected patient heals and becomes inmune" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a coma separated list of numbers between 0 and 1.
+                                    </div>
+                                    <div id="infected-inmune-vis" class="time-profile-vis"></div>
+                                </div>
+                                <div class="form-group time-profile-group">
+                                    <label for="severe-inmune-profile">Severe healing profile</label>
+                                    <input id="severe-inmune-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                        title="Probability  per day that an hospitalized patient heals and becomes inmune" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a coma separated list of numbers between 0 and 1.
+                                    </div>
+                                    <div id="severe-inumne-vis" class="time-profile-vis"></div>
+                                </div>
+                                <div class="form-group time-profile-group">
+                                    <laibel for="severe-dead-profile">Severe mortality profile</label>
+                                        <input id="severe-dead-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                            title="Probability per day than an hospitalized patient deceases." required>
+                                        <div class="invalid-feedback">
+                                            Please enter a coma separated list of numbers between 0 and 1.
+                                        </div>
+                                        <div id="infected-severe-vis" class="time-profile-vis"></div>
+                                </div>
+                                <div class="form-group time-profile-group">
+                                    <laibel for="inmune-susceptible-profile">Inmunity loss profile</label>
+                                        <input id="inmune-susceptible-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                            title="Probability per day than an inmune person losses inmunity and becomses susceptible again" required>
+                                        <div class="invalid-feedback">
+                                            Please enter a coma separated list of numbers between 0 and 1.
+                                        </div>
+                                        <div id="inmune-susceptible-vis" class="time-profile-vis"></div>
+                                </div>
+
+
+                            </fieldset>
+                            <fieldset class="border">
+                                <legend class="w-auto">Population structure</legend>
+                                <div class="form-group">
+                                    <label for="size-input">Total population size</label>
+                                    <input type="number" min="1" id="size-input" step="any" placeholder="E.g. 300000"
+                                        data-toggle="tooltip" title="Total number of agents in the simulation"
+                                        required></input>
+                                    <div class="invalid-feedback">
+                                        Please enter a positive number.
+                                    </div>
+                                </div>
+                                <fieldset class="border form-group">
+                                    <legend class="w-auto">Household size distribution</legend>
+                                    <div class="form-group">
+                                        <label for="family-input">Sizes (Number of inhabitants)</label>
+                                        <input id="family-dist" type="text" placeholder="E.g. 1, 2, 3, 4, 5"
+                                            data-toggle="tooltip" , title="Coma separated list of household sizes"
+                                            required></input>
+                                        <div class="invalid-feedback">
+                                            Size and weights should be list of positive numbers of the same length.
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="family-weight">Relative weights</label>
+                                        <input id="family-weight" type="text" placeholder="E.g. 25, 30, 20, 10, 5"
+                                            data-toggle="tooltip" , title="Coma separated list of household sizes"
+                                            required></input>
+                                        <div class="invalid-feedback">
+                                            Size and weights should be list of positive numbers of the same length.
+                                        </div>
+                                    </div>
+                                    <div id=family-dist-vis>
+
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="family-undetected-strength">Infectability
+                                            strength (Undetected)</label>
+                                        <input id="family-undetected-strength"
+                                            type="number" min="0" max="1" step="any"
+                                            placeholder="E.g. 1.0"
+                                            title="Relative frequency of infection when an undetected infected person interacts with a susceptible family member."
+                                            required />
+                                        <div class=" invalid-feedback">
+                                            Please enter a number between 0 and 1.
+                                        </div>
+
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="family-detected-strength">Infectability
+                                            strength (Detected)</label>
+                                        <input id="family-detected-strength"
+                                            type="number" min="0" max=1 step="any"
+                                            placeholder="E.g. 0.3"
+                                            title="Relative frequency of infection when a detected infected person interacts with a family memvr."
+                                            required />
+                                        <div class=" invalid-feedback">
+                                            Please enter a number between 0 and 1.
+                                        </div>
+
+                                    </div>
+
+                                </fieldset>
+                                <fieldset class="border">
+                                    <legend class="w-auto">Workplace distribution</legend>
+                                    <div class="form-group">
+                                        <label for="workplace-size">Average workplace size</label>
+                                        <input id="workplace-size" min="1" type="number" placeholder="E.g. 15"
+                                            data-toggle="tooltip" title="Average number of workers per workplace"
+                                            required></input>
+                                        <div class="invalid-feedback">
+                                            Please enter a positive number.
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="workplace-connectivity">Workplace
+                                            connectivity</label>
+                                        <input id="workplace-connectivity" min="0" max="1" step="any" type="number"
+                                            placeholder="E.g. 0.8" data-toggle="tooltip"
+                                            title="The probablity of two coworkers of being connected" required>
+                                        <div class="invalid-feedback">
+                                            Please enter a number between 0 and 1.
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="workplace-undetected-strength">Infectability
+                                            strength (Undetected)</label>
+                                        <input id="workplace-undetected-strength"
+                                            type="number" min="0" max="1" step="any"
+                                            placeholder="E.g. 0.8"
+                                            title="Relative frequency of infection when an undetected infected person interacts with a susceptible coworker."
+                                            required />
+                                        <div class=" invalid-feedback">
+                                            Please enter a positive number.
+                                        </div>
+
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="workplace-detected-strength">Infectability
+                                            strength (Detected)</label>
+                                        <input id="worplace-detected-strength"
+                                            type="number" min="0" max="1" step="any"
+                                            placeholder="E.g. 0.2"
+                                            title="Relative frequency of infection when a detected infected person interacts with a susceptible one."
+                                            required />
+                                        <div class=" invalid-feedback">
+                                            Please enter a positive number.
+                                        </div>
+
+                                    </div>
+
+                                </fieldset>
+                                <fieldset class="border">
+                                    <legend class="w-auto">General connectivity settings</legend>
+                                    <div class="form-group">
+                                        <label for="universe-connections">
+                                            Average number of random connections
+                                        </label>
+                                        <input id="universe-connections" type="number" min="0"
+                                            placeholder="E.g. 100"
+                                            title="Average number of people that each person encounters daily"
+                                            required></input>
+                                        <div class="invalid-feedback">Please enter a positive number</div>
+
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="universe-undetected-strength">Infectability
+                                            strength (Undetected)</label>
+                                        <input id="universe-undetected-strength"
+                                            type="number" min="0" max="1" step="any"
+                                            placeholder="E.g. 0.1"
+                                            title="Relative frequency of infection when an undetected infected person interacts with a susceptible one."
+                                            required />
+                                        <div class=" invalid-feedback">
+                                            Please enter a number between 0 and 1.
+                                        </div>
+
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="universe-detected-strength">Infectability
+                                            strength (Detected)</label>
+                                        <input id="universe-detected-strength"
+                                            type="number" min="0" max="1" step="any"
+                                            placeholder="E.g. 0.01"
+                                            title="Relative frequency of infection when a detected infected person interacts with a susceptible one."
+                                            required />
+                                        <div class=" invalid-feedback">
+                                            Please enter a number between 0 and 1.
+                                        </div>
+
+                                    </div>
+
+                                </fieldset>
+                            </fieldset>
+                            <button type="button" id="configure-close" data-invalid="Please enter valid data in the form" data-valid="Done"
+                                class="btn btn-secondary" data-toggle="collapse" data-target="#configure-collapse" aria-expanded="false"
+                                aria-controls="configure-collapse">Done</button>
+                            <div class="invalid-feedback">
+                                Please enter valid data in the form.
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <button id="play-pause" class="btn btn-primary btn-lg"></button>
+        </section>
+        <div class="py-5 bg-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div id="vis"></div>
+                    </div>
+                    <div class="col">
+                        <div id="vis-severe"></div>
+                    </div>
+
+                </div>
+                <div class="row">
+
+                    <div class="col">
+                        <pre id="display" class="text-center">The simulation may consume your CPU resources.</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="text-muted">
+        <div class="container">
+            Zahari Kassabov
+        </div>
+    </footer>
+    <script src="./index.js"></script>
+</body>
+
 </html>
