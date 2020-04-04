@@ -24,16 +24,10 @@ let timeoutID = null;
 
 async function init(args){
 	time = 0;
-	console.log("HERE");
-	console.log(args);
-	console.log(...args);
-	//throw new Error("HERE");
 	simulation = Simulation.new(...args);
-	console.log(simulation.ptr);
-	console.log("THERE");
 	postMessage({"type": "STARTED"});
 	await sleep(0);
-	postMessage({"type": "COUNTER_DATA", "args": push_counter()});
+	postMessage({"type": "COUNTER_DATA", "args": {"counter_output": simulation.get_counter()}});
 	await sleep(0);
 	run();
 }
