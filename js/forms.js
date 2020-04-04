@@ -38,8 +38,8 @@ configureClose.addEventListener("click", (event) => {
 	}
 });
 
-const familyDist = document.getElementById("family-dist");
-const familyWeight = document.getElementById("family-weight");
+const familyDist = document.getElementById("family_sizes_list");
+const familyWeight = document.getElementById("family_weights_list");
 
 function listToPosNums(l){
 	let words = l.split(",");

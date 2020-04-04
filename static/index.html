@@ -65,8 +65,8 @@
                             <fieldset class="border">
                                 <legend class="w-auto">Virus Characteristics</legend>
                                 <div class="form-group time-profile-group">
-                                    <label for=susceptible-infected-profile>Infectablity profile</label>
-                                    <input id="susceptible-infected-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                    <label for="susceptible_infected_profile_list">Infectablity profile</label>
+                                    <input name="susceptible_infected_profile_list" id="susceptible_infected_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
                                         title="Probability that an infected person spreads the disease to each contact on a given day, further weighted by the stregths defined below. The last value is repeated indefinitely." required>
                                     <div class="invalid-feedback">
                                         Please enter a coma separated list of numbers between 0 and 1.
@@ -74,8 +74,8 @@
                                     <div id="susceptible-infected-vis" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <label for=infected-detected-profile>Detection profile</label>
-                                    <input id="infected-detected-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                    <label for="infected_detected_profile_list">Detection profile</label>
+                                    <input name="infected_detected_profile_list" id="infected_detected_profile_list"  class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
                                         title="Probability per day that an undetected infected patient will be detected." required>
                                     <div class="invalid-feedback">
                                         Please enter a coma separated list of numbers between 0 and 1.
@@ -83,8 +83,8 @@
                                     <div id="infected-detected-vis" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <label for=infected-severe-profile>Worsening profile</label>
-                                    <input id="infected-severe-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                    <label for=infected_severe_profile_list>Worsening profile</label>
+                                    <input name="infected_severe_profile_list" id="infected_severe_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
                                         title="Probability per day that an infected patient becomes critical and requires hospitalization." required>
                                     <div class="invalid-feedback">
                                         Please enter a coma separated list of numbers between 0 and 1.
@@ -92,8 +92,8 @@
                                     <div id="infected-severe-vis" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <label for=infected-inmune-profile>Infected healing profile</label>
-                                    <input id="infected-inmune-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                    <label for=infected_inmune_profile_list>Infected healing profile</label>
+                                    <input name="infected_inmune_profile_list" id="infected_inmune_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
                                         title="Probability per day that an infected patient heals and becomes inmune" required>
                                     <div class="invalid-feedback">
                                         Please enter a coma separated list of numbers between 0 and 1.
@@ -102,7 +102,7 @@
                                 </div>
                                 <div class="form-group time-profile-group">
                                     <label for="severe-inmune-profile">Severe healing profile</label>
-                                    <input id="severe-inmune-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                    <input name="severe_inmune_profile_list" id="severe-inmune-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
                                         title="Probability  per day that an hospitalized patient heals and becomes inmune" required>
                                     <div class="invalid-feedback">
                                         Please enter a coma separated list of numbers between 0 and 1.
@@ -110,22 +110,22 @@
                                     <div id="severe-inumne-vis" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <laibel for="severe-dead-profile">Severe mortality profile</label>
-                                        <input id="severe-dead-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
-                                            title="Probability per day than an hospitalized patient deceases." required>
-                                        <div class="invalid-feedback">
-                                            Please enter a coma separated list of numbers between 0 and 1.
-                                        </div>
-                                        <div id="infected-severe-vis" class="time-profile-vis"></div>
+                                    <label for="severe_dead_profile_list">Severe mortality profile</label>
+                                    <input name="severe_dead_profile_list" id="severe_dead_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                        title="Probability per day than an hospitalized patient deceases." required>
+                                    <div class="invalid-feedback">
+                                        Please enter a coma separated list of numbers between 0 and 1.
+                                    </div>
+                                    <div id="infected-severe-vis" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <laibel for="inmune-susceptible-profile">Inmunity loss profile</label>
-                                        <input id="inmune-susceptible-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
-                                            title="Probability per day than an inmune person losses inmunity and becomses susceptible again" required>
-                                        <div class="invalid-feedback">
-                                            Please enter a coma separated list of numbers between 0 and 1.
-                                        </div>
-                                        <div id="inmune-susceptible-vis" class="time-profile-vis"></div>
+                                    <label for="inmune_susceptible_profile_list">Inmunity loss profile</label>
+                                    <input name="inmune_susceptible_profile_list" id="inmune_susceptible_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                        title="Probability per day than an inmune person losses inmunity and becomses susceptible again" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a coma separated list of numbers between 0 and 1.
+                                    </div>
+                                    <div id="inmune-susceptible-vis" class="time-profile-vis"></div>
                                 </div>
 
 
@@ -133,19 +133,27 @@
                             <fieldset class="border">
                                 <legend class="w-auto">Population structure</legend>
                                 <div class="form-group">
-                                    <label for="size-input">Total population size</label>
-                                    <input type="number" min="1" id="size-input" step="any" placeholder="E.g. 300000"
+                                    <label for="total_population">Total population size</label>
+                                    <input name="total_population" type="number" min="1" id="total_population" step="1" placeholder="E.g. 300000"
                                         data-toggle="tooltip" title="Total number of agents in the simulation"
                                         required></input>
                                     <div class="invalid-feedback">
                                         Please enter a positive number.
                                     </div>
                                 </div>
+                                <div class="form-group">
+                                    <label for="hospital_capacity">Hospital capacity</label>
+                                    <input name="hospital_capacity" type="number" min="1" id="hospital_capacity" step="1" placeholder="E.g. 300000"
+                                        data-toggle="tooltip" title="Hospital capacity"
+                                        required></input>
+                                    <div class="invalid-feedback">
+                                        Please enter a positive number.
+                                    </div>
                                 <fieldset class="border form-group">
                                     <legend class="w-auto">Household size distribution</legend>
                                     <div class="form-group">
-                                        <label for="family-input">Sizes (Number of inhabitants)</label>
-                                        <input id="family-dist" type="text" placeholder="E.g. 1, 2, 3, 4, 5"
+                                        <label for="family_sizes_list">Sizes (Number of inhabitants)</label>
+                                        <input name="family_sizes_list" id="family_sizes_list" type="text" placeholder="E.g. 1, 2, 3, 4, 5"
                                             data-toggle="tooltip" , title="Coma separated list of household sizes"
                                             required></input>
                                         <div class="invalid-feedback">
@@ -153,8 +161,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="family-weight">Relative weights</label>
-                                        <input id="family-weight" type="text" placeholder="E.g. 25, 30, 20, 10, 5"
+                                        <label for="family_weights_list">Relative weights</label>
+                                        <input name="family_size_weights_list" id="family_weights_list" type="text" placeholder="E.g. 25, 30, 20, 10, 5"
                                             data-toggle="tooltip" , title="Coma separated list of household sizes"
                                             required></input>
                                         <div class="invalid-feedback">
@@ -165,9 +173,9 @@
 
                                     </div>
                                     <div class="form-group">
-                                        <label for="family-undetected-strength">Infectability
+                                        <label for="family_contact_undetected_coef">Infectability
                                             strength (Undetected)</label>
-                                        <input id="family-undetected-strength"
+                                        <input name="family_contact_undetected_coef" id="family_contact_undetected_coef"
                                             type="number" min="0" max="1" step="any"
                                             placeholder="E.g. 1.0"
                                             title="Relative frequency of infection when an undetected infected person interacts with a susceptible family member."
@@ -178,9 +186,9 @@
 
                                     </div>
                                     <div class="form-group">
-                                        <label for="family-detected-strength">Infectability
+                                        <label for="family_contact_detacted_coef">Infectability
                                             strength (Detected)</label>
-                                        <input id="family-detected-strength"
+                                        <input name="family_contact_detacted_coef" id="family_contact_detacted_coef"
                                             type="number" min="0" max=1 step="any"
                                             placeholder="E.g. 0.3"
                                             title="Relative frequency of infection when a detected infected person interacts with a family memvr."
@@ -195,8 +203,8 @@
                                 <fieldset class="border">
                                     <legend class="w-auto">Workplace distribution</legend>
                                     <div class="form-group">
-                                        <label for="workplace-size">Average workplace size</label>
-                                        <input id="workplace-size" min="1" type="number" placeholder="E.g. 15"
+                                        <label for="average_workplace_size">Average workplace size</label>
+                                        <input name="average_workplace_size" id="average_workplace_size" min="1" type="number" placeholder="E.g. 15"
                                             data-toggle="tooltip" title="Average number of workers per workplace"
                                             required></input>
                                         <div class="invalid-feedback">
@@ -204,9 +212,9 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="workplace-connectivity">Workplace
+                                        <label for="workplace_connectivity">Workplace
                                             connectivity</label>
-                                        <input id="workplace-connectivity" min="0" max="1" step="any" type="number"
+                                        <input name="workplace_connectivity" id="workplace_connectivity" min="0" max="1" step="any" type="number"
                                             placeholder="E.g. 0.8" data-toggle="tooltip"
                                             title="The probablity of two coworkers of being connected" required>
                                         <div class="invalid-feedback">
@@ -214,9 +222,9 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="workplace-undetected-strength">Infectability
+                                        <label for="workplace_contact_undetected_coef">Infectability
                                             strength (Undetected)</label>
-                                        <input id="workplace-undetected-strength"
+                                        <input name="workplace_contact_undetected_coef" id="workplace_contact_undetected_coef"
                                             type="number" min="0" max="1" step="any"
                                             placeholder="E.g. 0.8"
                                             title="Relative frequency of infection when an undetected infected person interacts with a susceptible coworker."
@@ -227,9 +235,9 @@
 
                                     </div>
                                     <div class="form-group">
-                                        <label for="workplace-detected-strength">Infectability
+                                        <label for="workplace_contact_detected_coef">Infectability
                                             strength (Detected)</label>
-                                        <input id="worplace-detected-strength"
+                                        <input name="workplace_contact_detected_coef" id="workplace_contact_detected_coef"
                                             type="number" min="0" max="1" step="any"
                                             placeholder="E.g. 0.2"
                                             title="Relative frequency of infection when a detected infected person interacts with a susceptible one."
@@ -244,10 +252,10 @@
                                 <fieldset class="border">
                                     <legend class="w-auto">General connectivity settings</legend>
                                     <div class="form-group">
-                                        <label for="universe-connections">
+                                        <label for="average_world_connections">
                                             Average number of random connections
                                         </label>
-                                        <input id="universe-connections" type="number" min="0"
+                                        <input name="average_world_connections" id="average_world_connections" type="number" min="0"
                                             placeholder="E.g. 100"
                                             title="Average number of people that each person encounters daily"
                                             required></input>
@@ -255,9 +263,9 @@
 
                                     </div>
                                     <div class="form-group">
-                                        <label for="universe-undetected-strength">Infectability
+                                        <label for="world_contact_undetected_coef">Infectability
                                             strength (Undetected)</label>
-                                        <input id="universe-undetected-strength"
+                                        <input name="world_contact_undetected_coef" id="world_contact_undetected_coef"
                                             type="number" min="0" max="1" step="any"
                                             placeholder="E.g. 0.1"
                                             title="Relative frequency of infection when an undetected infected person interacts with a susceptible one."
@@ -268,9 +276,9 @@
 
                                     </div>
                                     <div class="form-group">
-                                        <label for="universe-detected-strength">Infectability
+                                        <label for="world_contact_detected_coef">Infectability
                                             strength (Detected)</label>
-                                        <input id="universe-detected-strength"
+                                        <input name="world_contact_detected_coef" id="world_contact_detected_coef"
                                             type="number" min="0" max="1" step="any"
                                             placeholder="E.g. 0.01"
                                             title="Relative frequency of infection when a detected infected person interacts with a susceptible one."

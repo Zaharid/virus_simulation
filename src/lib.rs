@@ -10,6 +10,7 @@ use rand::Rng;
 use rand::distributions::Distribution;
 use rand_distr::Binomial;
 use rand::distributions::weighted::alias_method::WeightedIndex;
+use serde::{Serialize, Deserialize};
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -45,7 +46,13 @@ const WORKPLACE_CONTACT_DETECTED_COEF: f64 = 0.05;
 const WORLD_CONTACT_INFECTED_COEF: f64 = 0.15;
 const WORLD_CONTACT_DETECTED_COEF: f64 = 0.01;
 
+const DEFAULT_TOTAL_POPULATION: usize = 300000;
+const DEFAULT_HOSPITAL_CAPACITY: usize = 2000;
+const DEFAULT_AVERAGE_WORKPLACE_SIZE: f64 = 15.;
 
+const DEFAULT_WORKPLACE_CONNECTIVITY: f64 = 0.8;
+
+const DEFAULT_WORLD_CONNECTIONS: f64 = 100.;
 
 
 fn sat_index<T: Copy>(v: &[T], i: usize) -> T{
@@ -54,6 +61,66 @@ fn sat_index<T: Copy>(v: &[T], i: usize) -> T{
 
 
 
+//#[wasm_bindgen]
+//#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Config{
+    susceptible_infected_profile: Vec<f64>,
+    infected_detected_profile: Vec<f64>,
+    infected_severe_profile: Vec<f64>,
+    infected_inmune_profile: Vec<f64>,
+    severe_inmune_profile: Vec<f64>,
+    severe_dead_profile: Vec<f64>,
+    inmune_susceptible_profile: Vec<f64>,
+    total_population: usize,
+    hospital_capacity: usize,
+    family_sizes: Vec<usize>,
+    family_size_weights: Vec<f64>,
+    family_contact_undetected_coef: f64,
+    family_contact_deteted_coef: f64,
+    average_workplace_size: f64,
+    workplace_connectivity: f64,
+    workplace_contact_undetected_coef: f64,
+    workplace_contact_detected_coef: f64,
+    average_world_connections: f64,
+    world_contact_undetected_coef: f64,
+    world_contact_detected_coef: f64,
+}
+
+impl Default for Config{
+    fn default() -> Config{
+        Config{
+            susceptible_infected_profile: SUSCEPTIBLE_INFECTED_PROFILE.to_vec(),
+            infected_detected_profile: INFECTED_DETECTED_PROFILE.to_vec(),
+            infected_severe_profile: INFECTED_CRITICAL_PROFILE.to_vec(),
+            infected_inmune_profile: INFECTED_INMUNE_PROFILE.to_vec(),
+            severe_inmune_profile: CRITICAL_INMUNE_PROFILE.to_vec(),
+            severe_dead_profile: CRITICAL_DEATH_PROFILE.to_vec(),
+            inmune_susceptible_profile: INMUNE_SUSCEPTIBLE_PROFILE.to_vec(),
+            total_population: DEFAULT_TOTAL_POPULATION,
+            hospital_capacity: DEFAULT_HOSPITAL_CAPACITY,
+            family_sizes: DEFAULT_FAMILY_SIZES.to_vec(),
+            family_size_weights: FAMILY_SIZE_WEIGHTS.to_vec(),
+            family_contact_undetected_coef: FAMILY_CONTACT_INFECTED_COEF,
+            family_contact_deteted_coef: FAMILY_CONTACT_INFECTED_COEF,
+            average_workplace_size: DEFAULT_AVERAGE_WORKPLACE_SIZE,
+            workplace_connectivity: DEFAULT_WORKPLACE_CONNECTIVITY,
+            workplace_contact_undetected_coef: WORKPLACE_CONTACT_INFECTED_COEF,
+            workplace_contact_detected_coef: WORKPLACE_CONTACT_DETECTED_COEF,
+            average_world_connections: DEFAULT_WORLD_CONNECTIONS,
+            world_contact_undetected_coef: WORLD_CONTACT_INFECTED_COEF,
+            world_contact_detected_coef: WORLD_CONTACT_DETECTED_COEF,
+        }
+    }
+
+}
+
+#[wasm_bindgen]
+impl Config{
+    pub fn default_config() -> JsValue{
+        JsValue::from_serde(&Config::default()).unwrap()
+    }
+}
 
 macro_rules! log {
     ($($t:tt)*) => {
