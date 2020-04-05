@@ -314,9 +314,6 @@ impl Simulation{
         }
     }
 
-    pub fn from_js2(config: JsValue) -> Simulation{
-        Simulation::new(config.into_serde().unwrap())
-    }
 
     pub fn tick(&mut self){
         let mut newstates:Vec<State> = Vec::with_capacity(self.states.len());
@@ -341,14 +338,18 @@ impl Simulation{
     }
 
     pub fn get_counter(&self) -> JsValue{
-        return JsValue::from_serde(&self.counter).unwrap();
+        JsValue::from_serde(&self.counter).unwrap()
+    }
+
+    pub fn get_hospital_capacity(&self) -> usize{
+        self.config.hospital_capacity
     }
 
 
 
 
     pub fn len(&self) -> usize{
-        return self.states.len();
+         self.states.len()
     }
 
 }

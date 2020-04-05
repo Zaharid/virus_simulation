@@ -50,7 +50,7 @@ async function init(){
 	view = (
 		await vegaEmbed(
 			"#vis",
-			population_spec,
+			population_spec(config.total_population),
 			opts
 			)
 	).view;
@@ -110,9 +110,23 @@ function push_counter(data){
 	let counter_output = data.counter_output;
 	//Todo find a better way to represent plotting data
 	for (let [key, value] of Object.entries(counter_output)){
-		plot_values.push({"time": data.time, "population": key, "value": value});
+		plot_values.push(
+			{"time": data.time, "population": key, "value": value}
+		);
 	}
 	return plot_values;
+}
+
+function push_severe(data){
+	//TODO: See if there is a way to do this without current_capacity
+	return [
+		{
+			"time": data.time, "kind": "Severe patients",
+		    "value": data.counter_output["Severe"],
+			"current_capacity": data.hospital_capacity
+		},
+		{"time": data.time, "kind": "Hospital capacity",  "value": data.hospital_capacity}
+	];
 }
 
 
@@ -124,7 +138,7 @@ function handleIncomingData(data){
 	let plot_values = push_counter(data);
 	display.innerHTML = JSON.stringify(data.counter_output, null, 4);
 	view.insert("mydata", plot_values).run();
-	severe_view.insert("mydata", plot_values).run();
+	severe_view.insert("mydata", push_severe(data)).run();
 	if(data.time % 10 === 0){
 		worker.postMessage({"type": "ACK", "args": data.time});
 	}

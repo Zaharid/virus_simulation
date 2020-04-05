@@ -60,7 +60,9 @@ export const dist_spec = {
   }
 }
 
-export const population_spec = {"$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+export function population_spec(total_population){
+	return {
+   "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
   "data": {"name": "mydata"},
   "width": 350,
   "height": 250,
@@ -92,9 +94,7 @@ export const population_spec = {"$schema": "https://vega.github.io/schema/vega-l
 	  "title": "Population count",
       "type": "quantitative",
       "stack": true,
-      //"scale": {"type": "symlog", "constant": 1},
-	  "scale": {"domain": [0,300000]}//,
-      //"axis": {"values": [0, 50000, 100000, 150000, 200000, 250000, 300000]}
+	  "scale": {"domain": [0, total_population]},
     },
 	"order": {"field": "cat_order", "type": "quantitative"},
     "tooltip": [
@@ -102,11 +102,66 @@ export const population_spec = {"$schema": "https://vega.github.io/schema/vega-l
 		  {"field": "population", "type": "ordinal", "title": "Group"},
 		  {"field": "value", "type": "quantitative", "title": "Population count"}
 	  ]
-	//"y2": {"field": "v2"}
   }
+ }
 }
 
-export const severe_spec = {"$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+export const severe_spec = {
+	"$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+	"data": {"name": "mydata"},
+	"width": 300,
+	"height": 250,
+	"layer": [
+		{
+			"mark": "line",
+			"encoding":{
+				"x":{
+					"field": "time",
+					"type": "quantitative",
+					"title": "days"
+				},
+				"y":{
+					"field": "value",
+					"type": "quantitative",
+					"title": "People"
+				},
+				"color":{
+					"field": "kind",
+					"title": "",
+					"type": "nominal",
+					"scale": {
+						"domain": [ "Severe patients",  "Hospital capacity"],
+						"range": ["#e7298a", "red"]
+					}
+				}
+			}
+		},
+		{
+			"transform": [{"filter": {"and": [
+				"datum.kind == 'Severe patients'",
+				"datum.value >= datum.current_capacity"
+			]}}],
+			"mark": "line",
+			"encoding": {
+				"x":{
+					"field": "time",
+					"type": "quantitative",
+					"title": "days"
+				},
+				"y":{
+					"field": "value",
+					"type": "quantitative",
+				},
+				"color": {"value": "black"},
+				"strokeWidth": {"value": 5}
+			}
+		}
+	]
+
+}
+
+
+export const severe_specxx = {"$schema": "https://vega.github.io/schema/vega-lite/v4.json",
 	"data": {"name": "mydata"},
 	"transform": [{"filter": "datum.population === 'Severe'"}],
 	"width": 350,

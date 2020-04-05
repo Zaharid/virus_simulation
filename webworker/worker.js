@@ -8,17 +8,6 @@ function sleep(ms) {
 let simulation = null;
 let time = null;
 
-function push_counter(){
-	let plot_values = [];
-	let counter_output = simulation.get_counter();
-	//Todo find a better way to represent plotting data
-	for (let [key, value] of Object.entries(counter_output)){
-		plot_values.push({"time": time, "population": key, "value": value});
-	}
-	//display.innerHTML = JSON.stringify(counter_output, null, 4);
-	return plot_values;
-}
-
 
 let timeoutID = null;
 
@@ -29,11 +18,21 @@ let isPaused = true;
 async function init(args){
 	time = 0;
 	last_received_time = 0;
-	simulation = Simulation.from_js2(args);
+	simulation = Simulation.from_js(args);
+	if (simulation===null){
+		throw new Error("Invalid simulation configuation");
+	}
 	postMessage({"type": "STARTED"});
 	isPaused = false;
 	await sleep(0);
-	postMessage({"type": "COUNTER_DATA", "args": {"counter_output": simulation.get_counter()}});
+	postMessage({
+		"type": "COUNTER_DATA",
+		"args": {
+			"time": time,
+			"counter_output": simulation.get_counter(),
+			"hospital_capacity": simulation.get_hospital_capacity()
+		}
+	});
 	await sleep(0);
 	run();
 }
@@ -54,7 +53,14 @@ function pause(){
 function run(){
 	simulation.tick();
 	time++;
-	postMessage({"type": "COUNTER_DATA", "args": {"counter_output": simulation.get_counter(), "time": time}});
+	postMessage({
+		"type": "COUNTER_DATA",
+		"args": {
+			"time": time,
+			"counter_output": simulation.get_counter(),
+			"hospital_capacity": simulation.get_hospital_capacity()
+		}
+	});
 	if (time - last_received_time > 20){
 		queue_full = true;
 		timeoutID = null;

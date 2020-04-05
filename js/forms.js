@@ -18,6 +18,30 @@ async function init_forms(){
 		let view = (await vegaEmbed(vis_div, timeprofile_spec, opts)).view;
 		time_profiles[input.id] = view;
 		input.addEventListener("input", timeProfileHandler);
+
+		let multiply_input = form.querySelector(".multiply-inp");
+		let multiply_btn = form.querySelector(".multiply-btn");
+		input.addEventListener("input", (event) => {
+			console.log(multiply_btn);
+			console.log("Will validate", event.target.checkValidity());
+			multiply_btn.disabled = !event.target.checkValidity();
+		});
+		multiply_btn.addEventListener("click", (event)=>{
+			let value = listToPosNums(input.value);
+			let multiplier = Number(multiply_input.value);
+			input.value = value.map((v) => {return (v*multiplier).toPrecision(3)});
+			let e = new Event("input");
+			input.dispatchEvent(e);
+			multiply_input.value = (1/multiplier).toFixed(1);
+			e = new Event("input");
+			multiply_input.dispatchEvent(e);
+		});
+		let reset_btn = form.querySelector(".reset-inp-btn");
+		reset_btn.addEventListener("click", () => {
+			input.value = input.getAttribute("data-original");
+			let e = new Event("input");
+			input.dispatchEvent(e);
+		});
 	}
 }
 
@@ -35,6 +59,7 @@ export function fillConfigForm(config){
 		}
 		let ele = document.getElementById(key);
 		ele.value = value;
+		ele.setAttribute("data-original", value);
 		let ev = new Event("input");
 		ele.dispatchEvent(ev);
 	}
