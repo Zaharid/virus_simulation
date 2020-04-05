@@ -68,99 +68,99 @@
                             <fieldset class="border">
                                 <legend class="w-auto">Virus Characteristics</legend>
                                 <div class="form-group time-profile-group">
-                                    <label for="susceptible_infected_profile_list">Infectablity profile</label>
-                                    <input name="susceptible_infected_profile_list" id="susceptible_infected_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
-                                        title="Probability that an infected person spreads the disease to each contact on a given day, further weighted by the stregths defined below. The last value is repeated indefinitely." required>
+                                    <label for="susceptible_infected_profile">Infectablity profile</label>
+                                    <input name="susceptible_infected_profile" id="susceptible_infected_profile" data-type="list" data-units="percent" class="time-profile-input" placeholder="E.g.  &quot;0, 1, 2&quot;" type="text"
+                                        title="Percent probability that an infected person spreads the disease to each contact on a given day, further weighted by the stregths defined below. The last value is repeated indefinitely." required>
                                     <div class="invalid-feedback">
-                                        Please enter a coma separated list of numbers between 0 and 1.
+                                        Please enter a coma separated list of numbers between 0 and 100.
                                     </div>
                                     <div class="form-group">
                                         <button type="button" class="multiply-btn btn btn-info btn-sm">Multiply input by</button>
-                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1"/>
+                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
-                                    <div id="susceptible-infected-vis" class="time-profile-vis"></div>
+                                    <div id="susceptible-infected-vis" data-ylabel="%/(contact*weight)" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <label for="infected_detected_profile_list">Detection profile</label>
-                                    <input name="infected_detected_profile_list" id="infected_detected_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
-                                        title="Probability per day that an undetected infected patient will be detected." required>
+                                    <label for="infected_detected_profile">Detection profile</label>
+                                    <input name="infected_detected_profile" id="infected_detected_profile" data-type="list" data-units="percent" class="time-profile-input" placeholder="E.g.  &quot;0, 1, 2&quot;" type="text"
+                                        title="Percent probability per day that an undetected infected patient will be detected." required>
                                     <div class="invalid-feedback">
-                                        Please enter a coma separated list of numbers between 0 and 1.
+                                        Please enter a coma separated list of numbers between 0 and 100.
                                     </div>
                                     <div class="form-group">
                                         <button type="button" class="multiply-btn btn btn-info btn-sm">Multiply input by</button>
-                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1"/>
+                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
                                     <div id="infected-detected-vis" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <label for=infected_severe_profile_list>Worsening profile</label>
-                                    <input name="infected_severe_profile_list" id="infected_severe_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                    <label for=infected_severe_profile>Worsening profile</label>
+                                    <input name="infected_severe_profile" id="infected_severe_profile" data-type="list" data-units="percent" class="time-profile-input" placeholder="E.g.  &quot;0, 1, 2&quot;" type="text"
                                         title="Probability per day that an infected patient becomes critical and requires hospitalization." required>
                                     <div class="invalid-feedback">
-                                        Please enter a coma separated list of numbers between 0 and 1.
+                                        Please enter a coma separated list of numbers between 0 and 100.
                                     </div>
                                     <div class="form-group">
                                         <button type="button" class="multiply-btn btn btn-info btn-sm">Multiply input by</button>
-                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1"/>
+                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
                                     <div id="infected-severe-vis" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <label for=infected_inmune_profile_list>Infected healing profile</label>
-                                    <input name="infected_inmune_profile_list" id="infected_inmune_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
-                                        title="Probability per day that an infected patient heals and becomes inmune" required>
+                                    <label for=infected_inmune_profile>Infected healing profile</label>
+                                    <input name="infected_inmune_profile" id="infected_inmune_profile" data-type="list" data-units="percent" class="time-profile-input" placeholder="E.g.  &quot;0, 1, 2&quot;" type="text"
+                                        title="Percent probability per day that an infected patient heals and becomes inmune" required>
                                     <div class="invalid-feedback">
-                                        Please enter a coma separated list of numbers between 0 and 1.
+                                        Please enter a coma separated list of numbers between 0 and 100.
                                     </div>
                                     <div class="form-group">
                                         <button type="button" class="multiply-btn btn btn-info btn-sm">Multiply input by</button>
-                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1"/>
+                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
                                     <div id="infected-inmune-vis" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <label for="severe_inmune_profile_list">Severe healing profile</label>
-                                    <input name="severe_inmune_profile_list" id="severe_inmune_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
-                                        title="Probability  per day that an hospitalized patient heals and becomes inmune" required>
+                                    <label for="severe_inmune_profile">Severe healing profile</label>
+                                    <input name="severe_inmune_profile" id="severe_inmune_profile" data-type="list" data-units="percent" class="time-profile-input" placeholder="E.g.  &quot;0, 1, 2&quot;" type="text"
+                                        title="Percent probability  per day that an hospitalized patient heals and becomes inmune" required>
                                     <div class="invalid-feedback">
-                                        Please enter a coma separated list of numbers between 0 and 1.
+                                        Please enter a coma separated list of numbers between 0 and 100.
                                     </div>
                                     <div class="form-group">
                                         <button type="button" class="multiply-btn btn btn-info btn-sm">Multiply input by</button>
-                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1"/>
+                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
                                     <div id="severe-inumne-vis" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <label for="severe_dead_profile_list">Severe mortality profile</label>
-                                    <input name="severe_dead_profile_list" id="severe_dead_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                    <label for="severe_dead_profile">Severe mortality profile</label>
+                                    <input name="severe_dead_profile" id="severe_dead_profile" data-type="list" data-units="percent" class="time-profile-input" placeholder="E.g.  &quot;0, 1, 2&quot;" type="text"
                                         title="Probability per day than an hospitalized patient deceases." required>
                                     <div class="invalid-feedback">
-                                        Please enter a coma separated list of numbers between 0 and 1.
+                                        Please enter a coma separated list of numbers between 0 and 100.
                                     </div>
                                     <div class="form-group">
                                         <button type="button" class="multiply-btn btn btn-info btn-sm">Multiply input by</button>
-                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1"/>
+                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
                                     <div id="infected-severe-vis" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <label for="inmune_susceptible_profile_list">Inmunity loss profile</label>
-                                    <input name="inmune_susceptible_profile_list" id="inmune_susceptible_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                    <label for="inmune_susceptible_profile">Inmunity loss profile</label>
+                                    <input name="inmune_susceptible_profile" id="inmune_susceptible_profile" data-type="list" data-units="percent" class="time-profile-input" placeholder="E.g.  &quot;0, 1, 2&quot;" type="text"
                                         title="Probability per day than an inmune person losses inmunity and becomses susceptible again" required>
                                     <div class="invalid-feedback">
-                                        Please enter a coma separated list of numbers between 0 and 1.
+                                        Please enter a coma separated list of numbers between 0 and 100.
                                     </div>
                                     <div class="form-group">
                                         <button type="button" class="multiply-btn btn btn-info btn-sm">Multiply input by</button>
-                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1"/>
+                                        <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
                                     <div id="inmune-susceptible-vis" class="time-profile-vis"></div>
@@ -195,8 +195,8 @@
                                     <fieldset class="border form-group">
                                         <legend class="w-auto">Household size distribution</legend>
                                         <div class="form-group">
-                                            <label for="family_sizes_list">Sizes (Number of inhabitants)</label>
-                                            <input name="family_sizes_list" id="family_sizes_list" type="text" placeholder="E.g. 1, 2, 3, 4, 5"
+                                            <label for="family_sizes">Sizes (Number of inhabitants)</label>
+                                            <input name="family_sizes" id="family_sizes" data-type="list"  type="text" placeholder="E.g. 1, 2, 3, 4, 5"
                                                 data-toggle="tooltip" , title="Coma separated list of household sizes"
                                                 required></input>
                                             <div class="invalid-feedback">
@@ -204,8 +204,8 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label for="family_size_weights_list">Relative weights</label>
-                                            <input name="family_size_weights_list" id="family_size_weights_list" type="text" placeholder="E.g. 25, 30, 20, 10, 5"
+                                            <label for="family_size_weights">Relative weights</label>
+                                            <input name="family_size_weights" id="family_size_weights" data-type="list"  type="text" placeholder="E.g. 25, 30, 20, 10, 5"
                                                 data-toggle="tooltip" , title="Coma separated list of household sizes"
                                                 required></input>
                                             <div class="invalid-feedback">
@@ -234,7 +234,7 @@
                                             <input name="family_contact_detected_coef" id="family_contact_detected_coef"
                                                 type="number" min="0" max=1 step="any"
                                                 placeholder="E.g. 0.3"
-                                                title="Relative frequency of infection when a detected infected person interacts with a family memvr."
+                                                title="Relative frequency of infection when a detected infected person interacts with a family member."
                                                 required />
                                             <div class=" invalid-feedback">
                                                 Please enter a number between 0 and 1.
@@ -257,9 +257,9 @@
                                         <div class="form-group">
                                             <label for="workplace_connectivity">Workplace
                                                 connectivity</label>
-                                            <input name="workplace_connectivity" id="workplace_connectivity" min="0" max="1" step="any" type="number"
-                                                placeholder="E.g. 0.8" data-toggle="tooltip"
-                                                title="The probablity of two coworkers of being connected" required>
+                                            <input name="workplace_connectivity" id="workplace_connectivity" min="0" max="100" step="any" type="number"
+                                                placeholder="E.g. 80" data-units="percent" data-toggle="tooltip"
+                                                title="Percent probablity of two coworkers of being connected" required>
                                             <div class="invalid-feedback">
                                                 Please enter a number between 0 and 1.
                                             </div>

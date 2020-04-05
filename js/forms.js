@@ -54,10 +54,14 @@ const configureForm = document.getElementById("configure-form");
 
 export function fillConfigForm(config){
 	for (let [key, value] of Object.entries(config)){
-		if (Array.isArray(value)){
-			key = key + "_list";
-		}
 		let ele = document.getElementById(key);
+		if(ele.getAttribute("data-units")==="percent"){
+			if(ele.getAttribute("data-type")==="list"){
+				value = value.map((x) => {return Number((x*100).toPrecision(5))});
+			}else{
+				value= Number((value*100).toPrecision(5));
+			}
+		}
 		ele.value = value;
 		ele.setAttribute("data-original", value);
 		let ev = new Event("input");
@@ -72,11 +76,19 @@ export function getConfig(){
 	let res = {}
 	let fd = new FormData(configureForm);
 	for (let [key, value] of fd.entries()){
-		if (key.endsWith("_list")){
-			key = key.substring(0, key.length - 5);
-			value = listToPosNums(value);
+		let ele = document.getElementById(key);
+		if (ele.getAttribute("data-type") === "list"){
+			if(ele.getAttribute("data-units") === "percent"){
+				value = value.split(",").map((x) => {return Number(x)/100});
+			}else{
+				value = value.split(",").map((x) => {return Number(x)});
+			}
 		}else{
-			value = Number(value);
+			if(ele.getAttribute("data-units") === "percent"){
+				value = Number(value)/100;
+			}else{
+				value = Number(value);
+			}
 		}
 		res[key] = value;
 	}
@@ -93,8 +105,8 @@ configureClose.addEventListener("click", (event) => {
 	}
 });
 
-const familyDist = document.getElementById("family_sizes_list");
-const familyWeight = document.getElementById("family_size_weights_list");
+const familyDist = document.getElementById("family_sizes");
+const familyWeight = document.getElementById("family_size_weights");
 
 function listToPosNums(l){
 	let words = l.split(",");
@@ -115,7 +127,7 @@ function listToProbs(l){
 	let numbers = []
 	for (let w of words){
 		let number = Number(w);
-		if (isNaN(number) || number < 0 || number > 1){
+		if (isNaN(number) || number < 0 || number > 100){
 			return null;
 		}
 		numbers.push(number);
