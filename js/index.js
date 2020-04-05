@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import vegaEmbed from 'vega-embed';
 
 import {population_spec, severe_spec} from "./plot_specs.js"
-import './forms.js';
+import {fillConfigForm} from './forms.js';
 
 
 const display = document.getElementById("display");
@@ -109,6 +109,9 @@ worker.onmessage = function(e){
 	let msg = e.data;
 	let tp = msg.type;
 	switch (tp){
+		case "DEFAULT_CONFIG":
+			fillConfigForm(msg.args.config);
+			break;
 		case "STARTED":
 		    isPaused = false;
 			playPauseButton.textContent = "⏸";
@@ -124,6 +127,11 @@ worker.onmessage = function(e){
 			playPauseButton.disabled = false;
 			break;
 	}
+}
+
+worker.onerror = function(e){
+	console.log(e);
+
 }
 
 

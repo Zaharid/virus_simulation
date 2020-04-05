@@ -1,4 +1,4 @@
-import {Simulation} from  "../pkg/index.js";
+import {Simulation, Config} from  "../pkg/index.js";
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -51,10 +51,14 @@ function run(){
 }
 
 onmessage = function(e){
+	console.log("Got some message");
 	let msg = e.data;
 	let tp = msg.type;
 	console.log(tp);
 	switch (tp){
+		case "GET_DEFAULT_CONFIG":
+			postMessage({"type": "DEFAULT_CONFIG", "args": {"config": Config.default_config()}});
+			break;
 		case "INIT":
 		    init(msg.args);
 		    break;
@@ -66,3 +70,5 @@ onmessage = function(e){
 			break;
 	}
 }
+
+postMessage({"type": "DEFAULT_CONFIG", "args": {"config": Config.default_config()}});

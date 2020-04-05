@@ -21,8 +21,11 @@
             margin-bottom: .25rem;
         }
 
-        .time-profile-vis {
-            width: 100%;
+        .time-profile-input {
+            width: 90%;
+        }
+
+        .time-profile-vis{
             margin: 20px;
         }
 
@@ -101,8 +104,8 @@
                                     <div id="infected-inmune-vis" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
-                                    <label for="severe-inmune-profile">Severe healing profile</label>
-                                    <input name="severe_inmune_profile_list" id="severe-inmune-profile" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                    <label for="severe_inmune_profile_list">Severe healing profile</label>
+                                    <input name="severe_inmune_profile_list" id="severe_inmune_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
                                         title="Probability  per day that an hospitalized patient heals and becomes inmune" required>
                                     <div class="invalid-feedback">
                                         Please enter a coma separated list of numbers between 0 and 1.
@@ -161,8 +164,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="family_weights_list">Relative weights</label>
-                                        <input name="family_size_weights_list" id="family_weights_list" type="text" placeholder="E.g. 25, 30, 20, 10, 5"
+                                        <label for="family_size_weights_list">Relative weights</label>
+                                        <input name="family_size_weights_list" id="family_size_weights_list" type="text" placeholder="E.g. 25, 30, 20, 10, 5"
                                             data-toggle="tooltip" , title="Coma separated list of household sizes"
                                             required></input>
                                         <div class="invalid-feedback">
@@ -186,9 +189,9 @@
 
                                     </div>
                                     <div class="form-group">
-                                        <label for="family_contact_detacted_coef">Infectability
+                                        <label for="family_contact_detected_coef">Infectability
                                             strength (Detected)</label>
-                                        <input name="family_contact_detacted_coef" id="family_contact_detacted_coef"
+                                        <input name="family_contact_detected_coef" id="family_contact_detected_coef"
                                             type="number" min="0" max=1 step="any"
                                             placeholder="E.g. 0.3"
                                             title="Relative frequency of infection when a detected infected person interacts with a family memvr."

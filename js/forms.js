@@ -28,6 +28,19 @@ async function init_forms(){
 const configureClose = document.getElementById("configure-close");
 const configureForm = document.getElementById("configure-form");
 
+
+export function fillConfigForm(config){
+	for (let [key, value] of Object.entries(config)){
+		if (Array.isArray(value)){
+			key = key + "_list";
+		}
+		let ele = document.getElementById(key);
+		ele.value = value;
+		let ev = new Event("input");
+		ele.dispatchEvent(ev);
+	}
+}
+
 configureClose.addEventListener("click", (event) => {
 	if(!configureForm.checkValidity()){
 		event.preventDefault();
@@ -39,7 +52,7 @@ configureClose.addEventListener("click", (event) => {
 });
 
 const familyDist = document.getElementById("family_sizes_list");
-const familyWeight = document.getElementById("family_weights_list");
+const familyWeight = document.getElementById("family_size_weights_list");
 
 function listToPosNums(l){
 	let words = l.split(",");
