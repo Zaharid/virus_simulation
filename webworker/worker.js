@@ -22,10 +22,16 @@ function push_counter(){
 
 let timeoutID = null;
 
+let last_received_time = null;
+let queue_full = false;
+let isPaused = true;
+
 async function init(args){
 	time = 0;
-	simulation = Simulation.new(...args);
+	last_received_time = 0;
+	simulation = Simulation.from_js2(args);
 	postMessage({"type": "STARTED"});
+	isPaused = false;
 	await sleep(0);
 	postMessage({"type": "COUNTER_DATA", "args": {"counter_output": simulation.get_counter()}});
 	await sleep(0);
@@ -34,27 +40,35 @@ async function init(args){
 
 
 function resume(){
+	isPaused = false;
 	timeoutID = setTimeout(run);
 	postMessage({"type": "STARTED"});
 }
 
 function pause(){
+	isPaused = true;
 	clearTimeout(timeoutID);
-	postMessage({"type": "STOPPED"});
+	postMessage({"type": "PAUSED"});
 }
 
 function run(){
 	simulation.tick();
-	postMessage({"type": "COUNTER_DATA", "args": {"counter_output": simulation.get_counter(), "time": time}});
 	time++;
+	postMessage({"type": "COUNTER_DATA", "args": {"counter_output": simulation.get_counter(), "time": time}});
+	if (time - last_received_time > 20){
+		queue_full = true;
+		timeoutID = null;
+		return;
+	}
 	timeoutID = setTimeout(run);
 }
 
+
+
+
 onmessage = function(e){
-	console.log("Got some message");
 	let msg = e.data;
 	let tp = msg.type;
-	console.log(tp);
 	switch (tp){
 		case "GET_DEFAULT_CONFIG":
 			postMessage({"type": "DEFAULT_CONFIG", "args": {"config": Config.default_config()}});
@@ -67,6 +81,15 @@ onmessage = function(e){
 			break;
 		case "RESUME":
 		    resume();
+			break;
+		case "ACK":
+			last_received_time = msg.args;
+			if(queue_full && time - last_received_time < 20){
+				queue_full = false;
+				if(!isPaused){
+					timeoutID = setTimeout(run);
+				}
+			}
 			break;
 	}
 }

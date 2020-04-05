@@ -15,7 +15,6 @@ async function init_forms(){
 	for (let form of all_time_profiles){
 		let input = form.querySelector(".time-profile-input");
 		let vis_div = form.querySelector(".time-profile-vis");
-		console.log(vis_div);
 		let view = (await vegaEmbed(vis_div, timeprofile_spec, opts)).view;
 		time_profiles[input.id] = view;
 		input.addEventListener("input", timeProfileHandler);
@@ -39,6 +38,24 @@ export function fillConfigForm(config){
 		let ev = new Event("input");
 		ele.dispatchEvent(ev);
 	}
+}
+
+export function getConfig(){
+	if(!configureForm.checkValidity()){
+		return null;
+	}
+	let res = {}
+	let fd = new FormData(configureForm);
+	for (let [key, value] of fd.entries()){
+		if (key.endsWith("_list")){
+			key = key.substring(0, key.length - 5);
+			value = listToPosNums(value);
+		}else{
+			value = Number(value);
+		}
+		res[key] = value;
+	}
+	return res;
 }
 
 configureClose.addEventListener("click", (event) => {
@@ -105,7 +122,6 @@ function show_household_dist(){
 	for (let i=0; i<familyDistNumbers.length; i++){
 		data.push({"x": familyDistNumbers[i], "y": familyWeightNumbers[i]});
 	}
-	console.log(data);
 	householdView.data("mydata", data).run();
 }
 

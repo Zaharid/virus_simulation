@@ -5,13 +5,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import vegaEmbed from 'vega-embed';
 
 import {population_spec, severe_spec} from "./plot_specs.js"
-import {fillConfigForm} from './forms.js';
+import {fillConfigForm, getConfig} from './forms.js';
 
 
 const display = document.getElementById("display");
 const plot_display = document.getElementById("vis");
 const severe_display = document.getElementById("severe-vis");
 const playPauseButton = document.getElementById("play-pause");
+const resetButton = document.getElementById("reset");
 
 
 let view = null;
@@ -25,9 +26,26 @@ let initialized = false;
 let isPaused = true;
 let isStarted = false;
 
+
+function endStyles(){
+	playPauseButton.classList.remove("btn-primary");
+	playPauseButton.classList.add("btn-secondary");
+	resetButton.classList.add("btn-primary");
+	resetButton.classList.remove("btn-secondary");
+}
+
+function initStyles(){
+	resetButton.classList.remove("btn-primary");
+	resetButton.classList.add("btn-secondary");
+	playPauseButton.classList.add("btn-primary");
+	playPauseButton.classList.remove("btn-secondary");
+}
+
 async function init(){
+	stopped_once = false;
 	display.innerHTML = "Preparing simulation...";
-	worker.postMessage({"type": "INIT", "args": [300000, 2000, 0.0001, 0.8, 20, 2000]});
+	let config = getConfig();
+	worker.postMessage({"type": "INIT", "args": config});
 	const opts = {"mode": "vega-lite", "padding":{"left": 20, "top": 5, right: 5, "bottom": 20}, "actions": false};
 	view = (
 		await vegaEmbed(
@@ -56,6 +74,7 @@ function play(event){
 		worker.postMessage({"type": "RESUME"});
 	}
 	playPauseButton.disabled = true;
+	resetButton.disabled = true;
 }
 
 function pause(event){
@@ -63,6 +82,12 @@ function pause(event){
 	playPauseButton.disabled = true;
 }
 
+function reset(){
+	initStyles();
+	pause();
+	isStarted = false;
+	resetButton.disabled = true;
+}
 
 
 
@@ -74,6 +99,10 @@ playPauseButton.addEventListener("click", event => {
 		pause(event);
 	}
 })
+
+
+resetButton.addEventListener("click", reset);
+
 
 
 function push_counter(data){
@@ -96,11 +125,15 @@ function handleIncomingData(data){
 	display.innerHTML = JSON.stringify(data.counter_output, null, 4);
 	view.insert("mydata", plot_values).run();
 	severe_view.insert("mydata", plot_values).run();
+	if(data.time % 10 === 0){
+		worker.postMessage({"type": "ACK", "args": data.time});
+	}
 	if (
 		!stopped_once &&
 		data.counter_output["Infected (Undetected)"] + data.counter_output["Infected (Detected)"] === 0
 	){
 		pause();
+		endStyles();
 		stopped_once = true;
 	}
 }
@@ -116,12 +149,12 @@ worker.onmessage = function(e){
 		    isPaused = false;
 			playPauseButton.textContent = "⏸";
 			playPauseButton.disabled = false;
-
+			resetButton.disabled = false;
 		    break;
 		case "COUNTER_DATA":
 			 handleIncomingData(msg.args);
 		     break;
-		case "STOPPED":
+		case "PAUSED":
 		    isPaused = true;
 			playPauseButton.textContent = "▶";
 			playPauseButton.disabled = false;

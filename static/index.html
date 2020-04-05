@@ -25,7 +25,7 @@
             width: 90%;
         }
 
-        .time-profile-vis{
+        .time-profile-vis {
             margin: 20px;
         }
 
@@ -78,7 +78,7 @@
                                 </div>
                                 <div class="form-group time-profile-group">
                                     <label for="infected_detected_profile_list">Detection profile</label>
-                                    <input name="infected_detected_profile_list" id="infected_detected_profile_list"  class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
+                                    <input name="infected_detected_profile_list" id="infected_detected_profile_list" class="time-profile-input" placeholder="E.g.  &quot;0, 0.01, 0.02&quot;" type="text"
                                         title="Probability per day that an undetected infected patient will be detected." required>
                                     <div class="invalid-feedback">
                                         Please enter a coma separated list of numbers between 0 and 1.
@@ -134,6 +134,11 @@
 
                             </fieldset>
                             <fieldset class="border">
+                                <legend class="w-auto">Initial outbreak</legend>
+                                <label for="initial_outbreak_size">Inital outbreak size</label>
+                                <input type="number" name="initial_outbreak_size" id="initial_outbreak_size" min="1" required>
+                            </fieldset>
+                            <fieldset class="border">
                                 <legend class="w-auto">Population structure</legend>
                                 <div class="form-group">
                                     <label for="total_population">Total population size</label>
@@ -152,147 +157,147 @@
                                     <div class="invalid-feedback">
                                         Please enter a positive number.
                                     </div>
-                                <fieldset class="border form-group">
-                                    <legend class="w-auto">Household size distribution</legend>
-                                    <div class="form-group">
-                                        <label for="family_sizes_list">Sizes (Number of inhabitants)</label>
-                                        <input name="family_sizes_list" id="family_sizes_list" type="text" placeholder="E.g. 1, 2, 3, 4, 5"
-                                            data-toggle="tooltip" , title="Coma separated list of household sizes"
-                                            required></input>
-                                        <div class="invalid-feedback">
-                                            Size and weights should be list of positive numbers of the same length.
+                                    <fieldset class="border form-group">
+                                        <legend class="w-auto">Household size distribution</legend>
+                                        <div class="form-group">
+                                            <label for="family_sizes_list">Sizes (Number of inhabitants)</label>
+                                            <input name="family_sizes_list" id="family_sizes_list" type="text" placeholder="E.g. 1, 2, 3, 4, 5"
+                                                data-toggle="tooltip" , title="Coma separated list of household sizes"
+                                                required></input>
+                                            <div class="invalid-feedback">
+                                                Size and weights should be list of positive numbers of the same length.
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="family_size_weights_list">Relative weights</label>
-                                        <input name="family_size_weights_list" id="family_size_weights_list" type="text" placeholder="E.g. 25, 30, 20, 10, 5"
-                                            data-toggle="tooltip" , title="Coma separated list of household sizes"
-                                            required></input>
-                                        <div class="invalid-feedback">
-                                            Size and weights should be list of positive numbers of the same length.
+                                        <div class="form-group">
+                                            <label for="family_size_weights_list">Relative weights</label>
+                                            <input name="family_size_weights_list" id="family_size_weights_list" type="text" placeholder="E.g. 25, 30, 20, 10, 5"
+                                                data-toggle="tooltip" , title="Coma separated list of household sizes"
+                                                required></input>
+                                            <div class="invalid-feedback">
+                                                Size and weights should be list of positive numbers of the same length.
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div id=family-dist-vis>
+                                        <div id=family-dist-vis>
 
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="family_contact_undetected_coef">Infectability
-                                            strength (Undetected)</label>
-                                        <input name="family_contact_undetected_coef" id="family_contact_undetected_coef"
-                                            type="number" min="0" max="1" step="any"
-                                            placeholder="E.g. 1.0"
-                                            title="Relative frequency of infection when an undetected infected person interacts with a susceptible family member."
-                                            required />
-                                        <div class=" invalid-feedback">
-                                            Please enter a number between 0 and 1.
                                         </div>
+                                        <div class="form-group">
+                                            <label for="family_contact_undetected_coef">Infectability
+                                                strength (Undetected)</label>
+                                            <input name="family_contact_undetected_coef" id="family_contact_undetected_coef"
+                                                type="number" min="0" max="1" step="any"
+                                                placeholder="E.g. 1.0"
+                                                title="Relative frequency of infection when an undetected infected person interacts with a susceptible family member."
+                                                required />
+                                            <div class=" invalid-feedback">
+                                                Please enter a number between 0 and 1.
+                                            </div>
 
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="family_contact_detected_coef">Infectability
-                                            strength (Detected)</label>
-                                        <input name="family_contact_detected_coef" id="family_contact_detected_coef"
-                                            type="number" min="0" max=1 step="any"
-                                            placeholder="E.g. 0.3"
-                                            title="Relative frequency of infection when a detected infected person interacts with a family memvr."
-                                            required />
-                                        <div class=" invalid-feedback">
-                                            Please enter a number between 0 and 1.
                                         </div>
+                                        <div class="form-group">
+                                            <label for="family_contact_detected_coef">Infectability
+                                                strength (Detected)</label>
+                                            <input name="family_contact_detected_coef" id="family_contact_detected_coef"
+                                                type="number" min="0" max=1 step="any"
+                                                placeholder="E.g. 0.3"
+                                                title="Relative frequency of infection when a detected infected person interacts with a family memvr."
+                                                required />
+                                            <div class=" invalid-feedback">
+                                                Please enter a number between 0 and 1.
+                                            </div>
 
-                                    </div>
-
-                                </fieldset>
-                                <fieldset class="border">
-                                    <legend class="w-auto">Workplace distribution</legend>
-                                    <div class="form-group">
-                                        <label for="average_workplace_size">Average workplace size</label>
-                                        <input name="average_workplace_size" id="average_workplace_size" min="1" type="number" placeholder="E.g. 15"
-                                            data-toggle="tooltip" title="Average number of workers per workplace"
-                                            required></input>
-                                        <div class="invalid-feedback">
-                                            Please enter a positive number.
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="workplace_connectivity">Workplace
-                                            connectivity</label>
-                                        <input name="workplace_connectivity" id="workplace_connectivity" min="0" max="1" step="any" type="number"
-                                            placeholder="E.g. 0.8" data-toggle="tooltip"
-                                            title="The probablity of two coworkers of being connected" required>
-                                        <div class="invalid-feedback">
-                                            Please enter a number between 0 and 1.
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="workplace_contact_undetected_coef">Infectability
-                                            strength (Undetected)</label>
-                                        <input name="workplace_contact_undetected_coef" id="workplace_contact_undetected_coef"
-                                            type="number" min="0" max="1" step="any"
-                                            placeholder="E.g. 0.8"
-                                            title="Relative frequency of infection when an undetected infected person interacts with a susceptible coworker."
-                                            required />
-                                        <div class=" invalid-feedback">
-                                            Please enter a positive number.
                                         </div>
 
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="workplace_contact_detected_coef">Infectability
-                                            strength (Detected)</label>
-                                        <input name="workplace_contact_detected_coef" id="workplace_contact_detected_coef"
-                                            type="number" min="0" max="1" step="any"
-                                            placeholder="E.g. 0.2"
-                                            title="Relative frequency of infection when a detected infected person interacts with a susceptible one."
-                                            required />
-                                        <div class=" invalid-feedback">
-                                            Please enter a positive number.
+                                    </fieldset>
+                                    <fieldset class="border">
+                                        <legend class="w-auto">Workplace distribution</legend>
+                                        <div class="form-group">
+                                            <label for="average_workplace_size">Average workplace size</label>
+                                            <input name="average_workplace_size" id="average_workplace_size" min="1" type="number" placeholder="E.g. 15"
+                                                data-toggle="tooltip" title="Average number of workers per workplace"
+                                                required></input>
+                                            <div class="invalid-feedback">
+                                                Please enter a positive number.
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="workplace_connectivity">Workplace
+                                                connectivity</label>
+                                            <input name="workplace_connectivity" id="workplace_connectivity" min="0" max="1" step="any" type="number"
+                                                placeholder="E.g. 0.8" data-toggle="tooltip"
+                                                title="The probablity of two coworkers of being connected" required>
+                                            <div class="invalid-feedback">
+                                                Please enter a number between 0 and 1.
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="workplace_contact_undetected_coef">Infectability
+                                                strength (Undetected)</label>
+                                            <input name="workplace_contact_undetected_coef" id="workplace_contact_undetected_coef"
+                                                type="number" min="0" max="1" step="any"
+                                                placeholder="E.g. 0.8"
+                                                title="Relative frequency of infection when an undetected infected person interacts with a susceptible coworker."
+                                                required />
+                                            <div class=" invalid-feedback">
+                                                Please enter a positive number.
+                                            </div>
+
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="workplace_contact_detected_coef">Infectability
+                                                strength (Detected)</label>
+                                            <input name="workplace_contact_detected_coef" id="workplace_contact_detected_coef"
+                                                type="number" min="0" max="1" step="any"
+                                                placeholder="E.g. 0.2"
+                                                title="Relative frequency of infection when a detected infected person interacts with a susceptible one."
+                                                required />
+                                            <div class=" invalid-feedback">
+                                                Please enter a positive number.
+                                            </div>
+
                                         </div>
 
-                                    </div>
+                                    </fieldset>
+                                    <fieldset class="border">
+                                        <legend class="w-auto">General connectivity settings</legend>
+                                        <div class="form-group">
+                                            <label for="average_world_connections">
+                                                Average number of random connections
+                                            </label>
+                                            <input name="average_world_connections" id="average_world_connections" type="number" min="0"
+                                                placeholder="E.g. 100"
+                                                title="Average number of people that each person encounters daily"
+                                                required></input>
+                                            <div class="invalid-feedback">Please enter a positive number</div>
 
-                                </fieldset>
-                                <fieldset class="border">
-                                    <legend class="w-auto">General connectivity settings</legend>
-                                    <div class="form-group">
-                                        <label for="average_world_connections">
-                                            Average number of random connections
-                                        </label>
-                                        <input name="average_world_connections" id="average_world_connections" type="number" min="0"
-                                            placeholder="E.g. 100"
-                                            title="Average number of people that each person encounters daily"
-                                            required></input>
-                                        <div class="invalid-feedback">Please enter a positive number</div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="world_contact_undetected_coef">Infectability
+                                                strength (Undetected)</label>
+                                            <input name="world_contact_undetected_coef" id="world_contact_undetected_coef"
+                                                type="number" min="0" max="1" step="any"
+                                                placeholder="E.g. 0.1"
+                                                title="Relative frequency of infection when an undetected infected person interacts with a susceptible one."
+                                                required />
+                                            <div class=" invalid-feedback">
+                                                Please enter a number between 0 and 1.
+                                            </div>
 
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="world_contact_undetected_coef">Infectability
-                                            strength (Undetected)</label>
-                                        <input name="world_contact_undetected_coef" id="world_contact_undetected_coef"
-                                            type="number" min="0" max="1" step="any"
-                                            placeholder="E.g. 0.1"
-                                            title="Relative frequency of infection when an undetected infected person interacts with a susceptible one."
-                                            required />
-                                        <div class=" invalid-feedback">
-                                            Please enter a number between 0 and 1.
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="world_contact_detected_coef">Infectability
+                                                strength (Detected)</label>
+                                            <input name="world_contact_detected_coef" id="world_contact_detected_coef"
+                                                type="number" min="0" max="1" step="any"
+                                                placeholder="E.g. 0.01"
+                                                title="Relative frequency of infection when a detected infected person interacts with a susceptible one."
+                                                required />
+                                            <div class=" invalid-feedback">
+                                                Please enter a number between 0 and 1.
+                                            </div>
+
                                         </div>
 
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="world_contact_detected_coef">Infectability
-                                            strength (Detected)</label>
-                                        <input name="world_contact_detected_coef" id="world_contact_detected_coef"
-                                            type="number" min="0" max="1" step="any"
-                                            placeholder="E.g. 0.01"
-                                            title="Relative frequency of infection when a detected infected person interacts with a susceptible one."
-                                            required />
-                                        <div class=" invalid-feedback">
-                                            Please enter a number between 0 and 1.
-                                        </div>
-
-                                    </div>
-
-                                </fieldset>
+                                    </fieldset>
                             </fieldset>
                             <button type="button" id="configure-close" data-invalid="Please enter valid data in the form" data-valid="Done"
                                 class="btn btn-secondary" data-toggle="collapse" data-target="#configure-collapse" aria-expanded="false"
@@ -306,6 +311,10 @@
             </div>
 
             <button id="play-pause" class="btn btn-primary btn-lg"></button>
+            <button id="reset" class="btn btn-secondary" disabled="true">⏹</button>
+            
+
+
         </section>
         <div class="py-5 bg-light">
             <div class="container">
