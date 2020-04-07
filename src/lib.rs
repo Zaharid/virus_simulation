@@ -411,7 +411,7 @@ impl Simulation{
         }else if let Some(s) = do_infect(
             &self.world_graph,
             i,
-            self.config.workplace_contact_undetected_coef,
+            self.config.world_contact_undetected_coef,
             self.config.world_contact_detected_coef,
             &self.config.susceptible_infected_profile,
             &mut self.counter,
