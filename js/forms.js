@@ -1,3 +1,4 @@
+import $ from "jquery";
 import vegaEmbed from 'vega-embed';
 
 import {dist_spec, timeprofile_spec} from "./plot_specs.js";
@@ -15,15 +16,16 @@ async function init_forms(){
 	for (let form of all_time_profiles){
 		let input = form.querySelector(".time-profile-input");
 		let vis_div = form.querySelector(".time-profile-vis");
-		let view = (await vegaEmbed(vis_div, timeprofile_spec, opts)).view;
+		let title = form.querySelector("label").innerHTML
+		let xlabel = vis_div.getAttribute("data-xlabel");
+		let ylabel = vis_div.getAttribute("data-ylabel")
+		let view = (await vegaEmbed(vis_div, timeprofile_spec(title, xlabel, ylabel), opts)).view;
 		time_profiles[input.id] = view;
 		input.addEventListener("input", timeProfileHandler);
 
 		let multiply_input = form.querySelector(".multiply-inp");
 		let multiply_btn = form.querySelector(".multiply-btn");
 		input.addEventListener("input", (event) => {
-			console.log(multiply_btn);
-			console.log("Will validate", event.target.checkValidity());
 			multiply_btn.disabled = !event.target.checkValidity();
 		});
 		multiply_btn.addEventListener("click", (event)=>{
@@ -46,6 +48,18 @@ async function init_forms(){
 }
 
 
+
+
+//A resize event is needed for the plots wake.
+//See:
+//https://vega.github.io/vega-lite/docs/size.html#specifying-responsive-width-and-height
+//
+//The event is triggered as per
+//https://getbootstrap.com/docs/4.0/components/collapse/#events
+$('#configure-collapse').on('shown.bs.collapse', () => {window.dispatchEvent(new Event('resize'));});
+//No idea why this doen't work.
+//const configureCollapse = document.getElementById("configure-collapse");
+//configureCollapse.addEventListener('shown',  xxf);
 
 
 const configureClose = document.getElementById("configure-close");

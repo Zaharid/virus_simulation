@@ -1,46 +1,54 @@
 
 //I have no idea why, but sorting by "value" works even though it doesn't make sense.
-export const timeprofile_spec = {
-  "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
-  "description": "A time profile chart",
-  "title": "Time profile",
-  "width": 500,
-  "data": {
-	  "name": "mydata"
-  },
-  "transform": [{"calculate": "isNumber(datum.day) ? datum.day : MAX_VALUE ", "as": "sortvalue"}],
-  "layer": [
-  {
-  "mark": "bar",
-  "encoding": {
-    "x": {
-		"field": "day", "type": "ordinal", "axis": {"labelAngle": 0}, "sort": {"field": "sortvalue", "type": "quantitative"}
-	},
-    "y": {"field": "value", "type": "quantitative"},
-	"order": {"field": "value", "type": "ordinal"},
-  }
-  },
-  {
-  "mark": "bar",
-  "transform": [{"filter": "datum.day==='...'"}],
-  "encoding": {
+export const timeprofile_spec =  function(title, xlabel, ylabel){
+	if (xlabel==undefined){
+	   xlabel = "day";
+	}
+	if (ylabel==undefined){
+		ylabel = "Probability (%)";
+	}
+ return {
+	  "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+	  "description": "A time profile chart",
+	  "title": title,
+	  "width": "container",
+	  "data": {
+		  "name": "mydata"
+	  },
+	  "transform": [{"calculate": "isNumber(datum.day) ? datum.day : MAX_VALUE ", "as": "sortvalue"}],
+	  "layer": [
+	  {
+	  "mark": "bar",
+	  "encoding": {
+		"x": {
+			"field": "day", "title": xlabel, "type": "ordinal", "axis": {"labelAngle": 0}, "sort": {"field": "sortvalue", "type": "quantitative"}
+		},
+		"y": {"field": "value", "type": "quantitative", "title": ylabel},
+		"order": {"field": "value", "type": "ordinal"},
+	  }
+	  },
+	  {
+	  "mark": "bar",
+	  "transform": [{"filter": "datum.day==='...'"}],
+	  "encoding": {
 
-    "x": {
-		"field": "day", "type": "ordinal", "axis": {"labelAngle": 0}, "sort": {"field": "sortvalue", "type": "quantitative"}
-	},
-    "color": {"value": "#cccccc"},
-    "y": {
-	    "field": "value",
-		"type": "quantitative"
-	},
-    "tooltip": {"value": "Last value is repeated subsequent days"},
-	"order": {"field": "value", "type": "ordinal"},
-  }
-  }
+		"x": {
+			"field": "day", "type": "ordinal", "axis": {"labelAngle": 0}, "sort": {"field": "sortvalue", "type": "quantitative"}
+		},
+		"color": {"value": "#cccccc"},
+		"y": {
+			"field": "value",
+			"type": "quantitative"
+		},
+		"tooltip": {"value": "Last value is repeated subsequent days"},
+		"order": {"field": "value", "type": "ordinal"},
+	  }
+	  }
 
 
-  ]
-};
+	  ]
+	};
+}
 
 const categories = ["Severe", "Dead", "Infected (Undetected)", "Infected (Detected)", "Inmune", "Susceptible"];
 

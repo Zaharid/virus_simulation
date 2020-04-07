@@ -26,7 +26,7 @@
         }
 
         .time-profile-vis {
-            margin: 20px;
+			width: 100%;
         }
 
         /*
@@ -79,7 +79,7 @@
                                         <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
-                                    <div id="susceptible-infected-vis" data-ylabel="%/(contact*weight)" class="time-profile-vis"></div>
+                                    <div id="susceptible-infected-vis" data-ylabel="Probability(%)/contact/weight" data-xlabel="day since infection" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
                                     <label for="infected_detected_profile">Detection profile</label>
@@ -93,7 +93,7 @@
                                         <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
-                                    <div id="infected-detected-vis" class="time-profile-vis"></div>
+                                    <div id="infected-detected-vis" data-xlabel="day since infection" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
                                     <label for=infected_severe_profile>Worsening profile</label>
@@ -107,7 +107,7 @@
                                         <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
-                                    <div id="infected-severe-vis" class="time-profile-vis"></div>
+                                    <div id="infected-severe-vis" data-xlabel="day since infection" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
                                     <label for=infected_inmune_profile>Infected healing profile</label>
@@ -121,7 +121,7 @@
                                         <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
-                                    <div id="infected-inmune-vis" class="time-profile-vis"></div>
+                                    <div id="infected-inmune-vis" data-xlabel="day since infection" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
                                     <label for="severe_inmune_profile">Severe healing profile</label>
@@ -135,7 +135,7 @@
                                         <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
-                                    <div id="severe-inumne-vis" class="time-profile-vis"></div>
+                                    <div id="severe-inumne-vis" data-xlabel="day since hospitalization" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
                                     <label for="severe_dead_profile">Severe mortality profile</label>
@@ -149,7 +149,7 @@
                                         <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
-                                    <div id="infected-severe-vis" class="time-profile-vis"></div>
+                                    <div id="infected-severe-vis" data-xlabel="day since hospitalization" class="time-profile-vis"></div>
                                 </div>
                                 <div class="form-group time-profile-group">
                                     <label for="inmune_susceptible_profile">Inmunity loss profile</label>
@@ -163,7 +163,7 @@
                                         <input type="number" class="multiply-inp" min="0" step="0.1" value="1" />
                                         <button type="button" class="reset-inp-btn btn btn-dark btn-sm">Reset original</button>
                                     </div>
-                                    <div id="inmune-susceptible-vis" class="time-profile-vis"></div>
+                                    <div id="inmune-susceptible-vis" data-xlabel="day since healing" class="time-profile-vis"></div>
                                 </div>
 
 
@@ -196,7 +196,7 @@
                                         <legend class="w-auto">Household size distribution</legend>
                                         <div class="form-group">
                                             <label for="family_sizes">Sizes (Number of inhabitants)</label>
-                                            <input name="family_sizes" id="family_sizes" data-type="list"  type="text" placeholder="E.g. 1, 2, 3, 4, 5"
+                                            <input name="family_sizes" id="family_sizes" data-type="list" type="text" placeholder="E.g. 1, 2, 3, 4, 5"
                                                 data-toggle="tooltip" , title="Coma separated list of household sizes"
                                                 required></input>
                                             <div class="invalid-feedback">
@@ -205,7 +205,7 @@
                                         </div>
                                         <div class="form-group">
                                             <label for="family_size_weights">Relative weights</label>
-                                            <input name="family_size_weights" id="family_size_weights" data-type="list"  type="text" placeholder="E.g. 25, 30, 20, 10, 5"
+                                            <input name="family_size_weights" id="family_size_weights" data-type="list" type="text" placeholder="E.g. 25, 30, 20, 10, 5"
                                                 data-toggle="tooltip" , title="Coma separated list of household sizes"
                                                 required></input>
                                             <div class="invalid-feedback">
