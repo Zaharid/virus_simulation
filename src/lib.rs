@@ -72,8 +72,6 @@ fn sat_index<T: Copy>(v: &[T], i: usize) -> T {
     *v.get(i).unwrap_or_else(|| v.last().unwrap())
 }
 
-//#[wasm_bindgen]
-//#[derive(Serialize, Deserialize)]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     susceptible_infected_profile: Vec<f64>,
@@ -124,6 +122,15 @@ impl Default for Config {
             world_contact_undetected_coef: WORLD_CONTACT_INFECTED_COEF,
             world_contact_detected_coef: WORLD_CONTACT_DETECTED_COEF,
         }
+    }
+}
+
+impl Config {
+    fn nworkplaces(&self) -> usize {
+        f64::max(
+            (self.total_population as f64) / self.average_workplace_size,
+            1.,
+        ) as usize
     }
 }
 
@@ -227,6 +234,8 @@ pub struct Simulation {
     world_graph: Graph,
     counter: Counter,
     states: Vec<State>,
+    worker_workplaces: Vec<usize>,
+    last_disabled_workplace: usize,
     config: Config,
 }
 
@@ -243,11 +252,9 @@ impl Simulation {
         let mut workplace_graph = Graph::new();
         let mut world_graph = Graph::new();
 
-        let mut workplaces: Vec<Vec<usize>> = Vec::new();
-        let nworkplaces = f64::max(
-            (config.total_population as f64) / config.average_workplace_size,
-            1.,
-        ) as usize;
+        let nworkplaces = config.nworkplaces();
+        let mut workplaces: Vec<Vec<usize>> = Vec::with_capacity(nworkplaces);
+        let mut worker_workplaces = Vec::with_capacity(config.total_population + 10);
         workplaces.resize_with(nworkplaces, Default::default);
 
         let mut states: Vec<State> = Vec::new();
@@ -268,6 +275,7 @@ impl Simulation {
                 }
 
                 let workplace: usize = rng.gen_range(0, nworkplaces);
+                worker_workplaces.push(workplace);
                 let _ = workplace_graph.register_node();
                 let workplace_nodes = &workplaces[workplace];
                 let nconnections =
@@ -304,12 +312,15 @@ impl Simulation {
             states[j] = State::Infected(0);
             counter.transit(State::Susceptible, State::Infected(0));
         }
+        let last_disabled_workplace = 0;
         Simulation {
             family_graph,
             workplace_graph,
             world_graph,
             counter,
+            worker_workplaces,
             states,
+            last_disabled_workplace,
             config,
         }
     }
@@ -351,6 +362,11 @@ impl Simulation {
         self.config.hospital_capacity
     }
 
+    pub fn disable_fraction_of_workplaces(&mut self, fraction: f64) {
+        self.last_disabled_workplace = (fraction * self.config.nworkplaces() as f64) as usize;
+        log!("Last disabled workpalce is {}", self.last_disabled_workplace);
+    }
+
     pub fn len(&self) -> usize {
         self.states.len()
     }
@@ -358,39 +374,46 @@ impl Simulation {
 
 impl Simulation {
     fn get_infected(&mut self, i: usize) -> State {
-        let iterdata: [(&Graph, f64, f64); 3] = [
-            (
+        let iterdata: [Option<(&Graph, f64, f64)>; 3] = [
+            Some((
                 &self.family_graph,
                 self.config.family_contact_undetected_coef,
                 self.config.family_contact_detected_coef,
-            ),
-            (
-                &self.workplace_graph,
-                self.config.workplace_contact_undetected_coef,
-                self.config.workplace_contact_detected_coef,
-            ),
-            (
+            )),
+            if self.worker_workplaces[i] < self.last_disabled_workplace {
+                None
+            } else {
+                Some((
+                    &self.workplace_graph,
+                    self.config.workplace_contact_undetected_coef,
+                    self.config.workplace_contact_detected_coef,
+                ))
+            },
+            Some((
                 &self.world_graph,
                 self.config.world_contact_undetected_coef,
                 self.config.world_contact_detected_coef,
-            ),
+            )),
         ];
-        for (g, infected_coef, detected_coef) in iterdata.iter(){
-
-            let nodes = g.left_nodes[i].iter().chain(g.right_nodes[i].iter());
-            for n in nodes {
-                let connected_state = self.states[*n];
-                if let State::Infected(t) | State::Detected(t) = connected_state{
-                     let coef = if let State::Infected(_) = connected_state{
-                         infected_coef
-                     }else{
-                         detected_coef
-                     };
-                     if coef * sat_index(&self.config.susceptible_infected_profile, t) > rand::random(){
-                         let ns = State::Infected(0);
-                         self.counter.transit(State::Susceptible, ns);
-                         return ns
-                     }
+        for opt in iterdata.iter() {
+            if let Some((g, infected_coef, detected_coef)) = opt {
+                let nodes = g.left_nodes[i].iter().chain(g.right_nodes[i].iter());
+                for n in nodes {
+                    let connected_state = self.states[*n];
+                    if let State::Infected(t) | State::Detected(t) = connected_state {
+                        let coef = if let State::Infected(_) = connected_state {
+                            infected_coef
+                        } else {
+                            detected_coef
+                        };
+                        if coef * sat_index(&self.config.susceptible_infected_profile, t)
+                            > rand::random()
+                        {
+                            let ns = State::Infected(0);
+                            self.counter.transit(State::Susceptible, ns);
+                            return ns;
+                        }
+                    }
                 }
             }
         }
