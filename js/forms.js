@@ -115,7 +115,7 @@ configureClose.addEventListener("click", (event) => {
 		event.stopPropagation();
 		event.target.setCustomValidity("Please enter valid data in the form");
 	}else{
-		even.target.setCustomValidity("");
+		event.target.setCustomValidity("");
 	}
 });
 
