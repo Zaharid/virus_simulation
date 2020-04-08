@@ -55,15 +55,15 @@ const categories = ["Severe", "Dead", "Infected (Undetected)", "Infected (Detect
 
 export const dist_spec = {
   "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+  "title": "Household size distribution",
   "description": "Distribution",
-  "width": 200,
-  "height": 150,
+  "width": "container",
   "data": {
 	  "name": "mydata"
   },
   "mark": "bar",
   "encoding": {
-    "x": {"field": "x", "title": "value", "type": "ordinal", "axis": {"labelAngle": 0}},
+    "x": {"field": "x", "title": "Number of habitants", "type": "ordinal", "axis": {"labelAngle": 0}},
     "y": {"field": "y", "title": "Frequency", "type": "quantitative"}
   }
 }
