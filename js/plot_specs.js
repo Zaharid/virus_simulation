@@ -21,7 +21,10 @@ export const timeprofile_spec =  function(title, xlabel, ylabel){
 	  "mark": "bar",
 	  "encoding": {
 		"x": {
-			"field": "day", "title": xlabel, "type": "ordinal", "axis": {"labelAngle": 0}, "sort": {"field": "sortvalue", "type": "quantitative"}
+			"field": "day", "title": xlabel, "type": "ordinal", "axis": {
+				"labelAngle": 0}
+			,
+			"sort": {"field": "sortvalue", "type": "quantitative"}
 		},
 		"y": {"field": "value", "type": "quantitative", "title": ylabel},
 		"order": {"field": "value", "type": "ordinal"},
@@ -72,7 +75,8 @@ export function population_spec(total_population){
 	return {
    "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
   "data": {"name": "mydata"},
-  "width": 350,
+  "width": "container",
+  "title": "Population distribution",
   "height": 250,
 
 
@@ -87,7 +91,7 @@ export function population_spec(total_population){
     "x": {
       "field": "time",
       "type": "quantitative",
-	  "title": "days"
+	  "title": "day since outbreak"
     },
     "color": {
       "field": "population",
@@ -117,7 +121,8 @@ export function population_spec(total_population){
 export const severe_spec = {
 	"$schema": "https://vega.github.io/schema/vega-lite/v4.json",
 	"data": {"name": "mydata"},
-	"width": 300,
+	"width": "container",
+	"title": "Hospital status",
 	"height": 250,
 	"layer": [
 		{
@@ -126,12 +131,12 @@ export const severe_spec = {
 				"x":{
 					"field": "time",
 					"type": "quantitative",
-					"title": "days"
+					"title": "day since outbreak"
 				},
 				"y":{
 					"field": "value",
 					"type": "quantitative",
-					"title": "People"
+					"title": "Number of patients"
 				},
 				"color":{
 					"field": "kind",
@@ -139,7 +144,7 @@ export const severe_spec = {
 					"type": "nominal",
 					"scale": {
 						"domain": [ "Severe patients",  "Hospital capacity"],
-						"range": ["#e7298a", "red"]
+						"range": ["#e7298a", "black"]
 					}
 				}
 			}
@@ -153,14 +158,13 @@ export const severe_spec = {
 			"encoding": {
 				"x":{
 					"field": "time",
-					"type": "quantitative",
-					"title": "days"
+					"type": "quantitative"
 				},
 				"y":{
 					"field": "value",
 					"type": "quantitative",
 				},
-				"color": {"value": "black"},
+				"color": {"value": "#e7298a"},
 				"strokeWidth": {"value": 5}
 			}
 		}
