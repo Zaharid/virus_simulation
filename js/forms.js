@@ -5,7 +5,6 @@ import {dist_spec, timeprofile_spec} from "./plot_specs.js";
 
 let householdView = null;
 
-let time_profiles = {}
 
 async function init_forms(){
 	const opts = {
@@ -19,9 +18,19 @@ async function init_forms(){
 		let title = form.querySelector("label").innerHTML
 		let xlabel = vis_div.getAttribute("data-xlabel");
 		let ylabel = vis_div.getAttribute("data-ylabel")
-		let view = (await vegaEmbed(vis_div, timeprofile_spec(title, xlabel, ylabel), opts)).view;
-		time_profiles[input.id] = view;
-		input.addEventListener("input", timeProfileHandler);
+		let view = (
+			await vegaEmbed(vis_div, timeprofile_spec(title, xlabel, ylabel), opts)
+		).view;
+		input.addEventListener("input", (event) =>{
+			let data = listToProbs(event.target.value);
+			if (data===null || data.length === 0){
+				event.target.setCustomValidity("Must be a list of probabilities");
+				return;
+			}
+			event.target.setCustomValidity("");
+			show_time_profile_dist(data, view);
+	        }
+		);
 
 		let multiply_input = form.querySelector(".multiply-inp");
 		let multiply_btn = form.querySelector(".multiply-btn");
@@ -149,16 +158,6 @@ function listToProbs(l){
 	return numbers
 }
 
-function timeProfileHandler(event){
-	let data = listToProbs(event.target.value);
-	if (data===null || data.length === 0){
-		event.target.setCustomValidity("Must be a list of probabilities");
-		return;
-	}
-	event.target.setCustomValidity("");
-	let view = time_profiles[event.target.id];
-	show_time_profile_dist(data, view)
-}
 
 function show_time_profile_dist(data, view){
     let plot_data = data.map((val, i) => {return {"day": i+1, "value": val}});
