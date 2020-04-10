@@ -6,6 +6,7 @@ import vegaEmbed from 'vega-embed';
 
 import {population_spec, severe_spec} from "./plot_specs.js"
 import {fillConfigForm, getConfig} from './forms.js';
+import {getPolicies} from './policy_forms.js'
 
 
 const display = document.getElementById("display");
@@ -44,6 +45,7 @@ function initStyles(){
 async function init(){
 	stopped_once = false;
 	display.innerHTML = "Preparing simulation...";
+	console.log(getPolicies());
 	let config = getConfig();
 	worker.postMessage({"type": "INIT", "args": config});
 	const opts = {"mode": "vega-lite", "padding":{"left": 20, "top": 5, right: 5, "bottom": 20}, "actions": false};

@@ -43,9 +43,17 @@
             margin-bottom: 20px;
         }
 
+        .core-vis {
+            width: 100%;
+        }
+
 
         .multiply-inp {
             width: 3em;
+        }
+
+        #policy-collapse {
+            padding-bottom: 3em;
         }
 
         label,
@@ -94,8 +102,95 @@
         <section class="jumbotron text-center">
             <h1> A virus propagation simuation</h1>
             <p class="lead">
-                Test the effect of public health policies on a simple model.
+                Test the effect of public health policies on a simple model <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#policy-collapse">Set policies</button>
             </p>
+            <div class="collapse" id="policy-collapse">
+                <div class="container">
+                    <div class="card-body" id="policy-container">
+                        <div class="py-3 border policy-selector">
+                            <div class="col-md-10 offset-md-2">
+                                <form class="was-validated trigger-form" novalidate>
+                                    <fieldset class="border">
+                                        <legend class="w-auto">Trigger</legend>
+
+                                        <select name="trigger-variable">
+                                            <option value="Severe">Severe</option>
+                                            <option value="Dead">Dead</option>
+                                            <option value="Infected (Undetected)">Infected (Undetected)</option>
+                                            <option value="Infected (Detected)">Infected (Detected)</option>
+                                            <option value="Inmune">Inmune</option>
+                                            <option value="Susceptible">Susceptible</option>
+                                        </select>
+                                        <select name="trigger-operator">
+                                            <option value=">=">≥</option>
+                                            <option value="<=">≤</option>
+                                        </select>
+                                        <input type="number" name="trigger-value" required>
+                                        <div class="invalid-feedback">
+                                            Please enter a valid number.
+                                        </div>
+                                    </fieldset>
+                                </form>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <div class="nav flex-column nav-pills policy-select" role="tablist" aria-orientation="vertical">
+                                        <a class="nav-link" id="pill-shut-workplaces" href="#form-shut-workplaces" data-toggle="pill" role="tab" aria-controls="form-shut-workplaces" aria-selected="false">Shut workplaces</a>
+                                        <a class="nav-link" id="pill-social-distancing" href="#form-social-distancing" data-toggle="pill" role="tab" aria-controls="form-social-distancing" aria-selected="false">Social distancing</a>
+                                    </div>
+                                </div>
+                                <div class="tab-content col-md-10">
+                                    <div class="tab-pane active align-middle h-100">Select a policy</div>
+                                    <div class="tab-pane fade" id="form-shut-workplaces" role="tabpanel" aria-labelledby="pill-shut-workplaces">
+                                        <form class="was-validated policy-form" data-policy="shut-workplaces" novalidate>
+                                            <fieldset class="border">
+                                                <legend class="w-auto">Shut workplaces</legend>
+                                                <label> Percentage of workplaces
+                                                    <input type="number" min="0" max="100" step="any" value="50" title="Percentage of workplaces to be closed completely" data-units="percent" name="workplaces" required>
+                                                    <div class="invalid-feedback">
+                                                        Please enter a number between 0 and 100.
+                                                    </div>
+                                                </label>
+                                            </fieldset>
+                                        </form>
+                                    </div>
+                                    <div class="tab-pane fade" id="form-social-distancing" role="tabpanel" aria-labelledby="pill-social-distancing">
+                                        <form class="was-validated policy-form" data-policy="social-distancing" novalidate>
+                                            <fieldset class="border">
+                                                <legend class="w-auto">Social distancing</legend>
+                                                <label>General Infectability reduction percentage
+                                                    <input type="number" min="0" max="100" step="any" title="Percentage reduction in infectability on random iterations" 
+                                                    value="70" data-units="percent" name="universe-reduction" required>
+                                                    <div class="invalid-feedback">
+                                                        Please enter a number between 0 and 100.
+                                                    </div>
+                                                </label>
+                                                <label>Workplace infectability reduction percentage
+                                                    <input type="number" min="0" max="100" step="any" title="Percentage reduction in infectability with coworkers" 
+                                                    value="30" data-units="percent" name="workplace-reduction" required>
+                                                    <div class="invalid-feedback">
+                                                        Please enter a number between 0 and 100.
+                                                    </div>
+                                                </label>
+
+                                            </fieldset>
+
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <button id="add-another-policy" class="btn btn-info">Add policy</button>
+                        <button id="remove-policy" class="btn btn-danger">Remove last</button>
+                    </div>
+                </div>
+            </div>
+            </div>
             <p class="lead">
                 Explore the dependency on the assumptions <button class="btn btn-secondary" type="button"
                     data-toggle="collapse" data-target="#configure-collapse" aria-expanded="false"
@@ -429,10 +524,10 @@
             <div class="container">
                 <div class="row">
                     <div class="col">
-                        <div id="vis"></div>
+                        <div class="core-vis" id="vis"></div>
                     </div>
                     <div class="col">
-                        <div id="vis-severe"></div>
+                        <div class="core-vis" id="vis-severe"></div>
                     </div>
 
                 </div>
