@@ -153,6 +153,7 @@ enum State {
     Infected(usize),
     Detected(usize),
     Severe(usize),
+    Unattended,
     Inmune(usize),
     Dead,
 }
@@ -164,6 +165,7 @@ impl State {
             State::Infected(_) => "Infected (Undetected)",
             State::Detected(_) => "Infected (Detected)",
             State::Severe(_) => "Severe",
+            State::Unattended => "Unattended",
             State::Inmune(_) => "Inmune",
             State::Dead => "Dead",
         }
@@ -345,6 +347,7 @@ impl Simulation {
                 State::Susceptible => self.get_infected(i),
                 State::Infected(t) => self.transit_infected(t),
                 State::Detected(t) => self.transit_detected(t),
+                State::Unattended => self.transit_unattended(),
                 State::Severe(t) => self.transit_severe(t),
                 State::Inmune(t) => self.transit_inmune(t),
                 State::Dead => State::Dead,
@@ -420,6 +423,10 @@ impl Simulation {
         State::Susceptible
     }
 
+    fn hospitals_full(&self) -> bool{
+        self.counter.state_count(State::Severe(0)) >= self.config.hospital_capacity as i32
+    }
+
     fn sample_state(states: &[State], weights: &[f64]) -> State {
         let mut weights = weights.to_vec();
         let logs = weights.iter().map(|x| (1. - *x).ln());
@@ -430,11 +437,13 @@ impl Simulation {
         states[index]
     }
 
+
     fn transit_infected(&mut self, t: usize) -> State {
+        let severe_state = if self.hospitals_full() { State::Unattended } else { State::Severe(0) };
         let opts = [
             State::Inmune(0),
             State::Detected(t + 1),
-            State::Severe(0),
+            severe_state,
             State::Infected(t + 1),
         ];
         let w = [
@@ -448,7 +457,8 @@ impl Simulation {
     }
 
     fn transit_detected(&mut self, t: usize) -> State {
-        let opts = [State::Inmune(0), State::Severe(0), State::Detected(t + 1)];
+        let severe_state = if self.hospitals_full() { State::Unattended } else { State::Severe(0) };
+        let opts = [State::Inmune(0), severe_state, State::Detected(t + 1)];
         let w = [
             sat_index(&self.config.infected_inmune_profile, t),
             sat_index(&self.config.infected_severe_profile, t),
@@ -458,12 +468,17 @@ impl Simulation {
         s
     }
 
+    fn transit_unattended(&mut self) -> State {
+        let newstate = if self.hospitals_full() {
+            State::Dead
+        }else{
+            State::Severe(1)
+        };
+        self.counter.transit(State::Unattended, newstate);
+        newstate
+    }
+
     fn transit_severe(&mut self, t: usize) -> State {
-        if self.counter.state_count(State::Severe(0)) > self.config.hospital_capacity as i32 {
-            let s = State::Dead;
-            self.counter.transit(State::Severe(0), State::Dead);
-            return s;
-        }
         let opts = [State::Inmune(0), State::Dead, State::Severe(t + 1)];
         let w = [
             sat_index(&self.config.severe_inmune_profile, t),

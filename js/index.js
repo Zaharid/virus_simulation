@@ -137,6 +137,11 @@ playPauseButton.textContent = "▶";
 let stopped_once = false;
 
 function handleIncomingData(data){
+	//Merge severe and unattended for simplicity of reportying
+	if (data.counter_output["Unattended"] > 0){
+		data.counter_output["Severe"] += data.counter_output["Unattended"];
+	}
+	delete data.counter_output["Unattended"];
 	let plot_values = push_counter(data);
 	display.innerHTML = JSON.stringify(data.counter_output, null, 4);
 	view.insert("mydata", plot_values).run();
