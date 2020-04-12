@@ -50,15 +50,9 @@ function pause(){
 	postMessage({"type": "PAUSED"});
 }
 
-let x = true;
 function run(){
 	simulation.tick();
 	time++;
-	if(simulation.get_counter()['Dead'] == 10 && x){
-		x = false;
-		simulation.disable_fraction_of_workplaces(0.9);
-		console.log("Disabled workplaces");
-	}
 	postMessage({
 		"type": "COUNTER_DATA",
 		"args": {
