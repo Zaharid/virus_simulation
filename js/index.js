@@ -48,7 +48,11 @@ async function init(){
 	console.log(getPolicies());
 	let config = getConfig();
 	worker.postMessage({"type": "INIT", "args": config});
-	const opts = {"mode": "vega-lite", "padding":{"left": 20, "top": 5, right: 5, "bottom": 20}, "actions": false};
+	const opts = {
+		"mode": "vega-lite",
+		"padding":{"left": 25, "top": 5, right: 5, "bottom": 20},
+		"actions": false
+	};
 	view = (
 		await vegaEmbed(
 			"#vis",
@@ -57,11 +61,18 @@ async function init(){
 			)
 	).view;
 
+    //For some reason the severe plot wants a different padding
+	const severe_opts = {
+		"mode": "vega-lite",
+		"padding":{"left": 40, "top": 5, right: 5, "bottom": 20},
+		"actions": false
+	};
+
 	severe_view = (
 		await vegaEmbed(
 			"#vis-severe",
 			severe_spec,
-			opts
+			severe_opts
 			)
 	).view;
 
