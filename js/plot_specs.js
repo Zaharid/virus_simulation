@@ -71,51 +71,102 @@ export const dist_spec = {
   }
 }
 
-export function population_spec(total_population){
-	return {
-   "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
-  "data": {"name": "mydata"},
-  "width": "container",
-  "title": "Population distribution",
-  "height": 250,
+export function population_spec(total_population) {
+    return {
+        "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+        "data": {
+            "name": "mydata"
+        },
+        "width": "container",
+        "title": "Population distribution",
+        "height": 250,
 
+        "layer": [{
+                "transform": [{
+                    "calculate": `indexof(${JSON.stringify(categories)}, datum.population)`,
+                    "as": "cat_order"
+                }],
+                "mark": {
+                    "type": "area",
+                },
+                "encoding": {
+                    "x": {
+                        "field": "time",
+                        "type": "quantitative",
+                        "title": "day since outbreak"
+                    },
+                    "color": {
+                        "field": "population",
+                        "type": "nominal",
+                        "sort": categories,
+                        "scale": {
+                            "domain": categories,
+                            "range": ["#e7298a", "#666666", "#d95f02", "#e6ab02", "#66a61e", "#1b9e77"]
+                        },
+                    },
+                    "y": {
+                        "field": "value",
+                        "title": "Population count",
+                        "type": "quantitative",
+                        "stack": true,
+                        "scale": {
+                            "domain": [0, total_population]
+                        },
+                    },
+                    "order": {
+                        "field": "cat_order",
+                        "type": "quantitative"
+                    },
+                    "tooltip": [{
+                            "field": "time",
+                            "type": "quantitative",
+                            "title": "day"
+                        },
+                        {
+                            "field": "population",
+                            "type": "ordinal",
+                            "title": "Group"
+                        },
+                        {
+                            "field": "value",
+                            "type": "quantitative",
+                            "title": "Population count"
+                        }
+                    ]
+                }
+            },
 
-  "transform": [
-	  {"calculate": `indexof(${JSON.stringify(categories)}, datum.population)`,
-	   "as": "cat_order"}
-  ],
-  "mark": {
-	  "type": "area",
-  },
-  "encoding": {
-    "x": {
-      "field": "time",
-      "type": "quantitative",
-	  "title": "day since outbreak"
-    },
-    "color": {
-      "field": "population",
-      "type": "nominal",
-      "sort": categories,
-      "scale": {
-		  "domain": categories,
-		  "range": ["#e7298a", "#666666", "#d95f02", "#e6ab02", "#66a61e", "#1b9e77"]},
-    },
-    "y": {
-      "field": "value",
-	  "title": "Population count",
-      "type": "quantitative",
-      "stack": true,
-	  "scale": {"domain": [0, total_population]},
-    },
-	"order": {"field": "cat_order", "type": "quantitative"},
-    "tooltip": [
-		  {"field": "time", "type": "quantitative", "title": "day"},
-		  {"field": "population", "type": "ordinal", "title": "Group"},
-		  {"field": "value", "type": "quantitative", "title": "Population count"}
-	  ]
-  }
- }
+            {
+                "data": {
+                    "name": "policy_data"
+                },
+                "mark": "rule",
+                "encoding": {
+                    "x": {
+                        "field": "time",
+                        "type": "quantitative"
+                    },
+                    "color": {
+                        "value": "#7570b3"
+                    },
+                    "strokeWidth": {
+                        "value": 2
+                    },
+                    "tooltip": [{
+                            "field": "policy",
+                            "type": "nominal"
+                        },
+                        {
+                            "field": "time",
+                            "type": "quantitative",
+                            "title": "day"
+                        },
+                    ],
+                },
+            },
+        ]
+
+    };
 }
 
 export const severe_spec = {
@@ -167,64 +218,25 @@ export const severe_spec = {
 				"color": {"value": "#e7298a"},
 				"strokeWidth": {"value": 5}
 			}
-		}
-	]
+		},
+		{
+			"data": {"name": "policy_data"},
+			"mark": "rule",
+			"encoding":{
+				"x": {
+					"field": "time",
+					"type": "quantitative"
+				},
+				"color": {"value": "#7570b3"},
+				"strokeWidth": {"value": 2},
+				"tooltip": [
+					{"field": "policy", "type": "nominal"},
+					{"field": "time", "type": "quantitative", "title": "day"},
+				],
+			},
+		},
+	],
 
 }
 
 
-export const severe_specxx = {"$schema": "https://vega.github.io/schema/vega-lite/v4.json",
-	"data": {"name": "mydata"},
-	"transform": [{"filter": "datum.population === 'Severe'"}],
-	"width": 350,
-	"height": 250,
-	"layer":[{
-		"mark": "line",
-		"encoding": {
-			"x": {
-				"field": "time",
-				"type": "quantitative",
-				"title": "days"
-			},
-			"color": {"value": "#e7298a"},
-			"y": {
-				"field": "value",
-				"type": "quantitative",
-				"title": "Severe patients"
-			}
-		}
-	},
-	{
-		"mark": "line",
-		"transform": [
-			{"filter": "datum.value >= 2000"},
-		],
-		"encoding": {
-			"x": {
-				"field": "time",
-				"type": "quantitative",
-			},
-			"color": {"value": "red"},
-			"y": {
-				"field": "value",
-				"type": "quantitative",
-			},
-			"strokeWidth": {"value": 5}
-
-		}
-	},
-
-	{
-		"mark": "rule",
-		"data": {"values": {"threshold": 2000}},
-		"encoding": {
-			"y": {
-				"field": "threshold",
-				"type": "quantitative",
-				"title": "Maximum hospital capacity"
-			},
-			"color": {"value": "red"}
-		}
-	}
-	]
-}

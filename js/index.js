@@ -170,6 +170,11 @@ function handleIncomingData(data){
 	}
 }
 
+function handlePolicyData(data){
+	severe_view.insert("policy_data", data).run();
+	view.insert("policy_data", data).run();
+}
+
 worker.onmessage = function(e){
 	let msg = e.data;
 	let tp = msg.type;
@@ -192,7 +197,7 @@ worker.onmessage = function(e){
 			playPauseButton.disabled = false;
 			break;
 		case "POLICY_APPLIED":
-			console.log("POLICY_APPLIED");
+			handlePolicyData(msg.args);
 			break;
 	}
 }

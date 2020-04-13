@@ -58,7 +58,6 @@ const ops = {
 }
 
 function runPolicy(policy, data){
-	console.log(policy, "<- TO BE APPLIED");
 	switch (policy){
 		case "shut-workplaces":
 			simulation.disable_fraction_of_workplaces(data.workplaces);
@@ -75,7 +74,6 @@ function checkTrigger(obj, trigger){
 	let op = ops[trigger["trigger-operator"]];
 	let v = obj[trigger["trigger-variable"]];
 	let c = trigger["trigger-value"];
-	console.log(op, v, c);
 	return op(v, c);
 }
 
@@ -96,13 +94,12 @@ function run(){
 	let newpolocies = [];
 	for (let p of policies){
 		if (checkTrigger(counter_data, p.trigger)){
-			console.log(p, "POLICY OBJECT");
 			runPolicy(p.policy, p.data);
 			postMessage({
 				"type": "POLICY_APPLIED",
 				"args": {
 					"time": time,
-					"policy": p.policiy
+					"policy": p.policy
 				}
 			})
 		}else{
