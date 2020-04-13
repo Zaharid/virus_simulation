@@ -45,9 +45,9 @@ function initStyles(){
 async function init(){
 	stopped_once = false;
 	display.innerHTML = "Preparing simulation...";
-	console.log(getPolicies());
+	let policies = getPolicies();
 	let config = getConfig();
-	worker.postMessage({"type": "INIT", "args": config});
+	worker.postMessage({"type": "INIT", "args": {"config": config, "policies": policies}});
 	const opts = {
 		"mode": "vega-lite",
 		"padding":{"left": 25, "top": 5, right: 5, "bottom": 20},

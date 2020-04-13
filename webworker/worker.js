@@ -18,7 +18,8 @@ let isPaused = true;
 async function init(args){
 	time = 0;
 	last_received_time = 0;
-	simulation = Simulation.from_js(args);
+	let config = args.config;
+	simulation = Simulation.from_js(config);
 	if (simulation===null){
 		throw new Error("Invalid simulation configuation");
 	}
