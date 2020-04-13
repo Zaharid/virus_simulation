@@ -23,8 +23,8 @@ const DEFAULT_FAMILY_SIZES: [usize; 5] = [1, 2, 3, 4, 5];
 const FAMILY_SIZE_WEIGHTS: [f64; 5] = [25.5, 30.4, 20.8, 17.5, 5.7];
 
 const SUSCEPTIBLE_INFECTED_PROFILE: [f64; 23] = [
-    0., 0.003, 0.005, 0.01, 0.01, 0.01, 0.01, 0.02, 0.05, 0.05, 0.05, 0.07, 0.07, 0.07, 0.05, 0.05,
-    0.05, 0.05, 0.02, 0.01, 0.005, 0.003, 0.001,
+    0., 0.005, 0.007, 0.015, 0.015, 0.015, 0.015, 0.03, 0.07, 0.07, 0.07, 0.1, 0.1, 0.1, 0.07,
+    0.07, 0.07, 0.07, 0.03, 0.015, 0.007, 0.005, 0.0015,
 ];
 
 const INFECTED_DETECTED_PROFILE: [f64; 18] = [
@@ -40,7 +40,7 @@ const INFECTED_INMUNE_PROFILE: [f64; 15] = [
     0., 0., 0., 0., 0., 0., 0., 0., 0., 0.05, 0.1, 0.2, 0.3, 0.5, 0.7,
 ];
 
-const CRITICAL_DEATH_PROFILE: [f64; 5] = [0., 0.01, 0.01, 0.02, 0.05];
+const CRITICAL_DEATH_PROFILE: [f64; 7] = [0., 0., 0., 0.01, 0.01, 0.02, 0.05];
 
 const CRITICAL_INMUNE_PROFILE: [f64; 10] = [0., 0., 0., 0., 0., 0., 0.03, 0.04, 0.07, 0.1];
 
@@ -66,7 +66,7 @@ const DEFAULT_AVERAGE_WORKPLACE_SIZE: f64 = 15.;
 
 const DEFAULT_WORKPLACE_CONNECTIVITY: f64 = 0.8;
 
-const DEFAULT_WORLD_CONNECTIONS: f64 = 100.;
+const DEFAULT_WORLD_CONNECTIONS: f64 = 50.;
 
 fn sat_index<T: Copy>(v: &[T], i: usize) -> T {
     *v.get(i).unwrap_or_else(|| v.last().unwrap())
@@ -369,23 +369,25 @@ impl Simulation {
         self.config.hospital_capacity
     }
 
-    pub fn get_time(&self) -> usize{
+    pub fn get_time(&self) -> usize {
         self.time
     }
 
     pub fn disable_fraction_of_workplaces(&mut self, fraction: f64) {
         self.last_disabled_workplace = (fraction * self.config.nworkplaces() as f64) as usize;
-        log!("Last disabled workpalce is {}", self.last_disabled_workplace);
+        log!(
+            "Last disabled workpalce is {}",
+            self.last_disabled_workplace
+        );
     }
 
-    pub fn multiply_world_infectability(&mut self, coef: f64){
+    pub fn multiply_world_infectability(&mut self, coef: f64) {
         self.config.world_contact_undetected_coef *= coef;
     }
 
-    pub fn multiply_workplace_infectability(&mut self, coef: f64){
+    pub fn multiply_workplace_infectability(&mut self, coef: f64) {
         self.config.workplace_contact_undetected_coef *= coef;
     }
-
 }
 
 impl Simulation {
@@ -436,7 +438,7 @@ impl Simulation {
         State::Susceptible
     }
 
-    fn hospitals_full(&self) -> bool{
+    fn hospitals_full(&self) -> bool {
         self.counter.state_count(State::Severe(0)) >= self.config.hospital_capacity as i32
     }
 
@@ -448,10 +450,10 @@ impl Simulation {
         let pnotrans = logs.sum::<f64>().exp();
         // The ptobabilities are c*Pi..., pnotrans, where c is fixed by normalization.
         // Reweight pnotrans instead.
-        let rwpnotrans = if pnotrans < 1.{
+        let rwpnotrans = if pnotrans < 1. {
             let wsum: f64 = weights.iter().sum();
-            pnotrans * wsum/(1.-pnotrans)
-        }else{
+            pnotrans * wsum / (1. - pnotrans)
+        } else {
             pnotrans
         };
 
@@ -461,9 +463,12 @@ impl Simulation {
         states[index]
     }
 
-
     fn transit_infected(&mut self, t: usize) -> State {
-        let severe_state = if self.hospitals_full() { State::Unattended } else { State::Severe(0) };
+        let severe_state = if self.hospitals_full() {
+            State::Unattended
+        } else {
+            State::Severe(0)
+        };
         let opts = [
             State::Inmune(0),
             State::Detected(t + 1),
@@ -481,7 +486,11 @@ impl Simulation {
     }
 
     fn transit_detected(&mut self, t: usize) -> State {
-        let severe_state = if self.hospitals_full() { State::Unattended } else { State::Severe(0) };
+        let severe_state = if self.hospitals_full() {
+            State::Unattended
+        } else {
+            State::Severe(0)
+        };
         let opts = [State::Inmune(0), severe_state, State::Detected(t + 1)];
         let w = [
             sat_index(&self.config.infected_inmune_profile, t),
@@ -495,7 +504,7 @@ impl Simulation {
     fn transit_unattended(&mut self) -> State {
         let newstate = if self.hospitals_full() {
             State::Dead
-        }else{
+        } else {
             State::Severe(1)
         };
         self.counter.transit(State::Unattended, newstate);
