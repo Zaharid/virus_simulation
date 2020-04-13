@@ -191,6 +191,9 @@ worker.onmessage = function(e){
 			playPauseButton.textContent = "▶";
 			playPauseButton.disabled = false;
 			break;
+		case "POLICY_APPLIED":
+			console.log("POLICY_APPLIED");
+			break;
 	}
 }
 

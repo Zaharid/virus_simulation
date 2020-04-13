@@ -81,8 +81,9 @@ export function getPolicies(){
 			return null;
 		}
 		let policy = pform.getAttribute("data-policy");
+		console.log("POLICY IS", policy);
 		policies.push(
-			{'policy': policy, 'trigger_data': triggerData, 'policy_data': policyData}
+			{'policy': policy, 'trigger': triggerData, 'data': policyData}
 		);
 
 	}

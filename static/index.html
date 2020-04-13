@@ -146,7 +146,9 @@
                                             <fieldset class="border">
                                                 <legend class="w-auto">Shut workplaces</legend>
                                                 <label> Percentage of workplaces
-                                                    <input type="number" min="0" max="100" step="any" value="50" title="Percentage of workplaces to be closed completely" data-units="percent" name="workplaces" required>
+                                                    <input type="number" min="0" max="100" step="any" value="50"
+                                                    title="Percentage of workplaces to be closed completely"
+                                                   imdata-units="percent" name="workplaces" required>
                                                     <div class="invalid-feedback">
                                                         Please enter a number between 0 and 100.
                                                     </div>
@@ -160,7 +162,7 @@
                                                 <legend class="w-auto">Social distancing</legend>
                                                 <label>General Infectability reduction percentage
                                                     <input type="number" min="0" max="100" step="any" title="Percentage reduction in infectability on random iterations" 
-                                                    value="70" data-units="percent" name="universe-reduction" required>
+                                                    value="70" data-units="percent" name="world-reduction" required>
                                                     <div class="invalid-feedback">
                                                         Please enter a number between 0 and 100.
                                                     </div>
@@ -523,10 +525,10 @@
         <div class="py-5 bg-light">
             <div class="container">
                 <div class="row">
-                    <div class="col">
+                    <div class="col-md-6">
                         <div class="core-vis" id="vis"></div>
                     </div>
-                    <div class="col">
+                    <div class="col-md-6">
                         <div class="core-vis" id="vis-severe"></div>
                     </div>
 

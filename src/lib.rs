@@ -239,6 +239,7 @@ pub struct Simulation {
     worker_workplaces: Vec<usize>,
     last_disabled_workplace: usize,
     config: Config,
+    time: usize,
 }
 
 impl Simulation {
@@ -314,8 +315,10 @@ impl Simulation {
             states[j] = State::Infected(0);
             counter.transit(State::Susceptible, State::Infected(0));
         }
+        let time = 0;
         let last_disabled_workplace = 0;
         Simulation {
+            time,
             family_graph,
             workplace_graph,
             world_graph,
@@ -355,6 +358,7 @@ impl Simulation {
             newstates.push(newstate);
         }
         self.states = newstates;
+        self.time += 1;
     }
 
     pub fn get_counter(&self) -> JsValue {
@@ -365,14 +369,23 @@ impl Simulation {
         self.config.hospital_capacity
     }
 
+    pub fn get_time(&self) -> usize{
+        self.time
+    }
+
     pub fn disable_fraction_of_workplaces(&mut self, fraction: f64) {
         self.last_disabled_workplace = (fraction * self.config.nworkplaces() as f64) as usize;
         log!("Last disabled workpalce is {}", self.last_disabled_workplace);
     }
 
-    pub fn len(&self) -> usize {
-        self.states.len()
+    pub fn multiply_world_infectability(&mut self, coef: f64){
+        self.config.world_contact_undetected_coef *= coef;
     }
+
+    pub fn multiply_workplace_infectability(&mut self, coef: f64){
+        self.config.workplace_contact_undetected_coef *= coef;
+    }
+
 }
 
 impl Simulation {
