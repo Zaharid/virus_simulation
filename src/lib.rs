@@ -429,9 +429,20 @@ impl Simulation {
 
     fn sample_state(states: &[State], weights: &[f64]) -> State {
         let mut weights = weights.to_vec();
-        let logs = weights.iter().map(|x| (1. - *x).ln());
-        let s = logs.sum::<f64>().exp();
-        weights.push(s);
+        // Compute probability of no transition, in a numerically stable way.
+        // Product (1-p_i) = Exp(Sum(Log(1-p_i)))
+        let logs = weights.iter().map(|x| (-(*x)).ln_1p());
+        let pnotrans = logs.sum::<f64>().exp();
+        // The ptobabilities are c*Pi..., pnotrans, where c is fixed by normalization.
+        // Reweight pnotrans instead.
+        let rwpnotrans = if pnotrans < 1.{
+            let wsum: f64 = weights.iter().sum();
+            pnotrans * wsum/(1.-pnotrans)
+        }else{
+            pnotrans
+        };
+
+        weights.push(rwpnotrans);
         let mut rng = rand::thread_rng();
         let index = WeightedIndex::new(weights).unwrap().sample(&mut rng);
         states[index]
