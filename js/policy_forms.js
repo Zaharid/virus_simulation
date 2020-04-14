@@ -4,6 +4,8 @@ import {parseForm} from "./formutils.js";
 
 const addAnother = document.getElementById('add-another-policy');
 const remove = document.getElementById('remove-policy');
+const done = document.getElementById('policies-close');
+const feedback = document.getElementById('policies-feedback');
 const policyContaniner = document.getElementById('policy-container');
 const blueprint = policyContaniner.querySelector('.policy-selector');
 
@@ -18,11 +20,18 @@ function sync(){
 	let pforms = policyContaniner.querySelectorAll(".policy-selector .active .policy-form");
 	let tforms = policyContaniner.querySelectorAll(".policy-selector .trigger-form");
 	const valid = (f) => {return f.checkValidity();};
-	addAnother.disabled = (
+	let disabled = (
 		!(pforms.length === nodes.length) ||
 		!Array.from(pforms).every(valid) ||
 		!Array.from(tforms).every(valid)
     );
+	addAnother.disabled = disabled;
+	done.disabled = disabled;
+	if(disabled){
+	    feedback.style.display = "block";
+	}else{
+	    feedback.style.display = "none";
+	}
 
 
 }
