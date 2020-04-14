@@ -53,7 +53,7 @@ export const timeprofile_spec =  function(title, xlabel, ylabel){
 	};
 }
 
-const categories = ["Severe", "Dead", "Infected (Undetected)", "Infected (Detected)", "Inmune", "Susceptible"];
+const categories = ["Severe", "Dead", "Infected (Undetected)", "Infected (Detected)", "Immune", "Susceptible"];
 
 
 export const dist_spec = {

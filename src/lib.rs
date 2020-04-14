@@ -154,7 +154,7 @@ enum State {
     Detected(usize),
     Severe(usize),
     Unattended,
-    Inmune(usize),
+    Immune(usize),
     Dead,
 }
 
@@ -166,7 +166,7 @@ impl State {
             State::Detected(_) => "Infected (Detected)",
             State::Severe(_) => "Severe",
             State::Unattended => "Unattended",
-            State::Inmune(_) => "Inmune",
+            State::Immune(_) => "Immune",
             State::Dead => "Dead",
         }
     }
@@ -352,7 +352,7 @@ impl Simulation {
                 State::Detected(t) => self.transit_detected(t),
                 State::Unattended => self.transit_unattended(),
                 State::Severe(t) => self.transit_severe(t),
-                State::Inmune(t) => self.transit_inmune(t),
+                State::Immune(t) => self.transit_inmune(t),
                 State::Dead => State::Dead,
             };
             newstates.push(newstate);
@@ -470,7 +470,7 @@ impl Simulation {
             State::Severe(0)
         };
         let opts = [
-            State::Inmune(0),
+            State::Immune(0),
             State::Detected(t + 1),
             severe_state,
             State::Infected(t + 1),
@@ -491,7 +491,7 @@ impl Simulation {
         } else {
             State::Severe(0)
         };
-        let opts = [State::Inmune(0), severe_state, State::Detected(t + 1)];
+        let opts = [State::Immune(0), severe_state, State::Detected(t + 1)];
         let w = [
             sat_index(&self.config.infected_inmune_profile, t),
             sat_index(&self.config.infected_severe_profile, t),
@@ -512,7 +512,7 @@ impl Simulation {
     }
 
     fn transit_severe(&mut self, t: usize) -> State {
-        let opts = [State::Inmune(0), State::Dead, State::Severe(t + 1)];
+        let opts = [State::Immune(0), State::Dead, State::Severe(t + 1)];
         let w = [
             sat_index(&self.config.severe_inmune_profile, t),
             sat_index(&self.config.severe_dead_profile, t),
@@ -523,10 +523,10 @@ impl Simulation {
     }
 
     fn transit_inmune(&mut self, t: usize) -> State {
-        let opts = [State::Susceptible, State::Inmune(t + 1)];
+        let opts = [State::Susceptible, State::Immune(t + 1)];
         let w = [sat_index(&self.config.inmune_susceptible_profile, t)];
         let s = Simulation::sample_state(&opts, &w);
-        self.counter.transit(State::Inmune(0), s);
+        self.counter.transit(State::Immune(0), s);
         s
     }
 }
