@@ -2,7 +2,9 @@ import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
+import $ from "jquery";
 import vegaEmbed from 'vega-embed';
+
 
 import {population_spec, severe_spec} from "./plot_specs.js"
 import {fillConfigForm, getConfig} from './forms.js';
@@ -26,6 +28,23 @@ let initialized = false;
 
 let isPaused = true;
 let isStarted = false;
+
+for (let ele of document.querySelectorAll(".anchor-link")){
+	ele.addEventListener("click", (e) => {
+		let ele = e.target;
+		let dest = document.querySelector(ele.getAttribute('href'));
+		let collapse = null;
+		if (ele.hasAttribute("data-target")){
+			collapse = ele.getAttribute("data-target");
+		}else{
+			collapse = dest.closest(".collapse");
+		}
+		if (collapse){
+			$(collapse).one("shown.bs.collapse", (_) => dest.scrollIntoView());
+			$(collapse).collapse("show");
+		}
+	});
+}
 
 
 function endStyles(){
