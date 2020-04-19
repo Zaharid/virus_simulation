@@ -77,10 +77,10 @@ pub struct Config {
     susceptible_infected_profile: Vec<f64>,
     infected_detected_profile: Vec<f64>,
     infected_severe_profile: Vec<f64>,
-    infected_inmune_profile: Vec<f64>,
-    severe_inmune_profile: Vec<f64>,
+    infected_immune_profile: Vec<f64>,
+    severe_immune_profile: Vec<f64>,
     severe_dead_profile: Vec<f64>,
-    inmune_susceptible_profile: Vec<f64>,
+    immune_susceptible_profile: Vec<f64>,
     initial_outbreak_size: usize,
     total_population: usize,
     hospital_capacity: usize,
@@ -103,10 +103,10 @@ impl Default for Config {
             susceptible_infected_profile: SUSCEPTIBLE_INFECTED_PROFILE.to_vec(),
             infected_detected_profile: INFECTED_DETECTED_PROFILE.to_vec(),
             infected_severe_profile: INFECTED_CRITICAL_PROFILE.to_vec(),
-            infected_inmune_profile: INFECTED_INMUNE_PROFILE.to_vec(),
-            severe_inmune_profile: CRITICAL_INMUNE_PROFILE.to_vec(),
+            infected_immune_profile: INFECTED_INMUNE_PROFILE.to_vec(),
+            severe_immune_profile: CRITICAL_INMUNE_PROFILE.to_vec(),
             severe_dead_profile: CRITICAL_DEATH_PROFILE.to_vec(),
-            inmune_susceptible_profile: INMUNE_SUSCEPTIBLE_PROFILE.to_vec(),
+            immune_susceptible_profile: INMUNE_SUSCEPTIBLE_PROFILE.to_vec(),
             initial_outbreak_size: DEFAULT_INITIAL_OUTBREAK_SIZE,
             total_population: DEFAULT_TOTAL_POPULATION,
             hospital_capacity: DEFAULT_HOSPITAL_CAPACITY,
@@ -352,7 +352,7 @@ impl Simulation {
                 State::Detected(t) => self.transit_detected(t),
                 State::Unattended => self.transit_unattended(),
                 State::Severe(t) => self.transit_severe(t),
-                State::Immune(t) => self.transit_inmune(t),
+                State::Immune(t) => self.transit_immune(t),
                 State::Dead => State::Dead,
             };
             newstates.push(newstate);
@@ -476,7 +476,7 @@ impl Simulation {
             State::Infected(t + 1),
         ];
         let w = [
-            sat_index(&self.config.infected_inmune_profile, t),
+            sat_index(&self.config.infected_immune_profile, t),
             sat_index(&self.config.infected_detected_profile, t),
             sat_index(&self.config.infected_severe_profile, t),
         ];
@@ -493,7 +493,7 @@ impl Simulation {
         };
         let opts = [State::Immune(0), severe_state, State::Detected(t + 1)];
         let w = [
-            sat_index(&self.config.infected_inmune_profile, t),
+            sat_index(&self.config.infected_immune_profile, t),
             sat_index(&self.config.infected_severe_profile, t),
         ];
         let s = Simulation::sample_state(&opts, &w);
@@ -514,7 +514,7 @@ impl Simulation {
     fn transit_severe(&mut self, t: usize) -> State {
         let opts = [State::Immune(0), State::Dead, State::Severe(t + 1)];
         let w = [
-            sat_index(&self.config.severe_inmune_profile, t),
+            sat_index(&self.config.severe_immune_profile, t),
             sat_index(&self.config.severe_dead_profile, t),
         ];
         let s = Simulation::sample_state(&opts, &w);
@@ -522,9 +522,9 @@ impl Simulation {
         s
     }
 
-    fn transit_inmune(&mut self, t: usize) -> State {
+    fn transit_immune(&mut self, t: usize) -> State {
         let opts = [State::Susceptible, State::Immune(t + 1)];
-        let w = [sat_index(&self.config.inmune_susceptible_profile, t)];
+        let w = [sat_index(&self.config.immune_susceptible_profile, t)];
         let s = Simulation::sample_state(&opts, &w);
         self.counter.transit(State::Immune(0), s);
         s
