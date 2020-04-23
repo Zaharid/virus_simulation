@@ -145,7 +145,7 @@ the Household infectability decrease relatively little when a patient is <a
 class="anchor-link" href="#family_contact_detected_coef">known to be
 infected</a>.  <a class="anchor-link"
 href="#workplace_contact_undetected_coef">Workplace</a> and <a
-class="anchor-link" href="#world_contact_undetected_coed">World</a>
+class="anchor-link" href="#world_contact_undetected_coef">World</a>
 infectability strengths are lower, and also decrease strongly when a patient is
 known to be infected. All strengths are tunable, and also can be influenced by
 policy choices.
