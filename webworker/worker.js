@@ -1,5 +1,25 @@
 import {Simulation, Config} from  "../pkg/index.js";
 
+
+const NAMES = [
+    "Susceptible",
+    "Infected (Undetected)",
+    "Infected (Detected)",
+    "Severe",
+    "Unattended",
+    "Immune",
+    "Dead",
+];
+
+
+function make_counter_data(arr){
+	let obj = {};
+	NAMES.forEach((name, i) => {
+		obj[name] = arr[i];
+	});
+	return obj;
+}
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -27,14 +47,19 @@ async function init(args){
 	postMessage({"type": "STARTED"});
 	isPaused = false;
 	await sleep(0);
+	let raw_counter_data = simulation.get_counter();
+	let abs_counter_output = make_counter_data(raw_counter_data.abs_counter);
+	let day_counter_output = make_counter_data(raw_counter_data.day_counter);
 	postMessage({
 		"type": "COUNTER_DATA",
 		"args": {
 			"time": simulation.get_time(),
-			"counter_output": simulation.get_counter(),
-			"hospital_capacity": simulation.get_hospital_capacity()
+			"abs_counter_output": abs_counter_output,
+			"day_counter_output": day_counter_output,
+			"hospital_capacity": simulation.get_hospital_capacity(),
 		}
 	});
+	//Actually send messages
 	await sleep(0);
 	run();
 }
@@ -70,6 +95,7 @@ function runPolicy(policy, data){
 
 }
 
+
 function checkTrigger(obj, trigger){
 	let op = ops[trigger["trigger-operator"]];
 	let v = obj[trigger["trigger-variable"]];
@@ -80,20 +106,23 @@ function checkTrigger(obj, trigger){
 function run(){
 	simulation.tick();
 	let time = simulation.get_time();
-	let counter_data = simulation.get_counter();
+	let raw_counter_data = simulation.get_counter();
+	let abs_counter_output = make_counter_data(raw_counter_data.abs_counter);
+	let day_counter_output = make_counter_data(raw_counter_data.day_counter);
 	postMessage({
 		"type": "COUNTER_DATA",
 		"args": {
 			"time": time,
-			"counter_output": counter_data,
-			"hospital_capacity": simulation.get_hospital_capacity()
+			"abs_counter_output": abs_counter_output,
+			"day_counter_output": day_counter_output,
+			"hospital_capacity": simulation.get_hospital_capacity(),
 		}
 	});
 
 
 	let newpolocies = [];
 	for (let p of policies){
-		if (checkTrigger(counter_data, p.trigger)){
+		if (checkTrigger(abs_counter_data, p.trigger)){
 			runPolicy(p.policy, p.data);
 			postMessage({
 				"type": "POLICY_APPLIED",

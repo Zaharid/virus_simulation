@@ -1,7 +1,5 @@
 mod utils;
 
-use std::collections::HashMap;
-
 use wasm_bindgen::prelude::*;
 use web_sys;
 
@@ -159,15 +157,15 @@ enum State {
 }
 
 impl State {
-    fn name(&self) -> &'static str {
+    fn index(&self) -> usize{
         match self {
-            State::Susceptible => "Susceptible",
-            State::Infected(_) => "Infected (Undetected)",
-            State::Detected(_) => "Infected (Detected)",
-            State::Severe(_) => "Severe",
-            State::Unattended => "Unattended",
-            State::Immune(_) => "Immune",
-            State::Dead => "Dead",
+            State::Susceptible =>0,
+            State::Infected(_) =>1,
+            State::Detected(_) =>2,
+            State::Severe(_) =>3,
+            State::Unattended =>4,
+            State::Immune(_) =>5,
+            State::Dead =>6,
         }
     }
 }
@@ -203,31 +201,41 @@ impl Graph {
     }
 }
 
-type Counter = HashMap<&'static str, i32>;
 
-trait Count {
-    fn register(&mut self, s: State);
-    fn transit(&mut self, from: State, to: State);
-    fn state_count(&self, s: State) -> i32;
+#[derive(Serialize, Deserialize, Debug)]
+struct Counter{
+    abs_counter: [i32;7],
+    day_counter: [i32;7],
 }
 
-impl Count for Counter {
-    fn register(&mut self, s: State) {
-        let v = self.entry(s.name()).or_insert(0);
-        *v += 1;
+
+
+impl Counter{
+    fn new () -> Counter{
+        let abs_counter = [0,0,0,0,0,0,0];
+        let day_counter = [0,0,0,0,0,0,0];
+        Counter{abs_counter, day_counter}
+    }
+    fn register(&mut self, s:State){
+        self.abs_counter[s.index()] += 1;
+    }
+    fn state_count(&self, s: State) -> i32{
+        self.abs_counter[s.index()]
+    }
+    fn transit(&mut self, from: State, to: State){
+        self.abs_counter[from.index()] -= 1;
+        self.abs_counter[to.index()] += 1;
+        if from.index() != to.index(){
+            self.day_counter[to.index()] += 1;
+        }
+    }
+    fn reset_day_counter(&mut self){
+        for i in self.day_counter.iter_mut(){ *i = 0};
     }
 
-    fn state_count(&self, s: State) -> i32 {
-        *self.get(s.name()).unwrap_or(&0)
-    }
-
-    fn transit(&mut self, from: State, to: State) {
-        let v = self.get_mut(from.name()).unwrap();
-        *v -= 1;
-        let v = self.entry(to.name()).or_insert(0);
-        *v += 1;
-    }
 }
+
+
 
 #[wasm_bindgen]
 pub struct Simulation {
@@ -249,7 +257,7 @@ impl Simulation {
         let mut rng = rand::thread_rng();
         let family_sampler = WeightedIndex::new(config.family_size_weights.clone()).unwrap();
 
-        let mut counter = HashMap::new();
+        let mut counter = Counter::new();
 
         let mut family_graph = Graph::new();
         let mut workplace_graph = Graph::new();
@@ -341,6 +349,7 @@ impl Simulation {
     }
 
     pub fn tick(&mut self) {
+        self.counter.reset_day_counter();
         let mut newstates: Vec<State> = Vec::with_capacity(self.states.len());
 
         //Don't iterate over state here so we can mutably borrow `self` later

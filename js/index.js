@@ -139,7 +139,7 @@ resetButton.addEventListener("click", reset);
 
 function push_counter(data){
 	let plot_values = [];
-	let counter_output = data.counter_output;
+	let counter_output = data.abs_counter_output;
 	//Todo find a better way to represent plotting data
 	for (let [key, value] of Object.entries(counter_output)){
 		plot_values.push(
@@ -154,7 +154,7 @@ function push_severe(data){
 	return [
 		{
 			"time": data.time, "kind": "Severe patients",
-		    "value": data.counter_output["Severe"],
+		    "value": data.abs_counter_output["Severe"],
 			"current_capacity": data.hospital_capacity
 		},
 		{"time": data.time, "kind": "Hospital capacity",  "value": data.hospital_capacity}
@@ -168,12 +168,13 @@ let stopped_once = false;
 
 function handleIncomingData(data){
 	//Merge severe and unattended for simplicity of reportying
-	if (data.counter_output["Unattended"] > 0){
-		data.counter_output["Severe"] += data.counter_output["Unattended"];
+	let counter_output = data.abs_counter_output;
+	if (counter_output["Unattended"] > 0){
+		counter_output["Severe"] += counter_output["Unattended"];
 	}
-	delete data.counter_output["Unattended"];
+	delete counter_output["Unattended"];
 	let plot_values = push_counter(data);
-	display.innerHTML = JSON.stringify(data.counter_output, null, 4);
+	display.innerHTML = JSON.stringify(counter_output, null, 4);
 	view.insert("mydata", plot_values).run();
 	severe_view.insert("mydata", push_severe(data)).run();
 	if(data.time % 10 === 0){
@@ -181,7 +182,7 @@ function handleIncomingData(data){
 	}
 	if (
 		!stopped_once &&
-		data.counter_output["Infected (Undetected)"] + data.counter_output["Infected (Detected)"] === 0
+		counter_output["Infected (Undetected)"] + counter_output["Infected (Detected)"] === 0
 	){
 		pause();
 		endStyles();
