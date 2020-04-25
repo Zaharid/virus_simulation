@@ -61,11 +61,16 @@
             padding-bottom: 2rem;
         }
 
+        figure > img {
+            max-width: 100%;
+            height: auto;
+        }
+
         #policy-collapse {
             padding-bottom: 3em;
         }
 
-        .anchor-link:after {
+        .anchor-link:before {
             content: "⚙";
 
         }
@@ -117,7 +122,7 @@
             <h1> A virus propagation simulation</h1>
             <button class="btn btn-secondary" type="button" data-toggle="collapse" data-target="#doc-collapse">Model description</button>
             <div class="collapse container" id="doc-collapse">
-                <div class="row doc-container p-5 m-4">
+                <div class="row doc-container p-lg-5 m-lg-4">
                     <div class="col-md-12 text-left">
                         <h3 id="about">About</h3>
                         <p>This is a simulation of a simplified model of epidemic response which attempts to account for both dynamics of disease propagation, the saturation of the healthcare system, and the effect of policy responses. The default parameters and the choice of policies attempt to describe the current Covid-19 crisis.</p>
