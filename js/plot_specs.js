@@ -80,7 +80,6 @@ export function population_spec(total_population) {
         "width": "container",
         "title": "Population distribution",
         "height": 250,
-
         "layer": [{
                 "transform": [{
                     "calculate": `indexof(${JSON.stringify(categories)}, datum.population)`,
@@ -93,7 +92,8 @@ export function population_spec(total_population) {
                     "x": {
                         "field": "time",
                         "type": "quantitative",
-                        "title": "day since outbreak"
+                        "title": "day since outbreak",
+                        "scale": {"nice": false},
                     },
                     "color": {
                         "field": "population",
@@ -182,7 +182,8 @@ export const severe_spec = {
 				"x":{
 					"field": "time",
 					"type": "quantitative",
-					"title": "day since outbreak"
+					"title": "day since outbreak",
+					"scale": {"nice": false},
 				},
 				"y":{
 					"field": "value",
