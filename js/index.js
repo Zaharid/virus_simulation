@@ -196,11 +196,9 @@ function push_severe(data){
 function push_daily(data){
 	let plot_values = []
 	let time = data.time;
-	console.log(data.day_counter_output);
 	for (let [key, value] of Object.entries(data.day_counter_output)){
 		plot_values.push({"time": time, "Daily changes": key, "daily new": value});
 	}
-	console.log(plot_values);
 	return plot_values;
 
 }
@@ -252,17 +250,17 @@ worker.onmessage = function(e){
 	switch (tp){
 		case "DEFAULT_CONFIG":
 			fillConfigForm(msg.args.config);
-           let url = new URL(window.location);
-           if (url.searchParams.has("config")){
-                let configstr = url.searchParams.get("config");
-                fillConfigForm(JSON.parse(decodeURIComponent(configstr)));
-            }
-            if (url.searchParams.has("policies")){
-                let policystr = url.searchParams.get("policies");
-                let policies = JSON.parse(decodeURIComponent(policystr))
-                fillPolicyForm(policies);
-            }
-            urlDisplay.value = url;
+			let url = new URL(window.location);
+			if (url.searchParams.has("config")){
+				let configstr = url.searchParams.get("config");
+				fillConfigForm(JSON.parse(decodeURIComponent(configstr)));
+			}
+			if (url.searchParams.has("policies")){
+				let policystr = url.searchParams.get("policies");
+				let policies = JSON.parse(decodeURIComponent(policystr))
+				fillPolicyForm(policies);
+			}
+			urlDisplay.value = url;
 			break;
 		case "STARTED":
 		    isPaused = false;
