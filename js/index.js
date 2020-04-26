@@ -8,7 +8,7 @@ import vegaEmbed from 'vega-embed';
 
 import {population_spec, severe_spec, daily_events_spec} from "./plot_specs.js"
 import {fillConfigForm, getConfig} from './forms.js';
-import {getPolicies} from './policy_forms.js'
+import {fillPolicyForm, getPolicies} from './policy_forms.js'
 
 
 const display = document.getElementById("display");
@@ -16,6 +16,8 @@ const plot_display = document.getElementById("vis");
 const severe_display = document.getElementById("severe-vis");
 const playPauseButton = document.getElementById("play-pause");
 const resetButton = document.getElementById("reset");
+const urlDisplay = document.getElementById("urlshare");
+const copyURL = document.getElementById("copyurl");
 
 
 let view = null;
@@ -29,6 +31,13 @@ let initialized = false;
 
 let isPaused = true;
 let isStarted = false;
+
+copyURL.addEventListener("click", () => {
+	urlDisplay.select();
+	document.execCommand("copy");
+	copyURL.textContent = "Done!";
+	setTimeout(() => {copyURL.textContent = "Copy URL"}, 1000);
+});
 
 for (let ele of document.querySelectorAll(".anchor-link")){
 	ele.addEventListener("click", (e) => {
@@ -114,8 +123,10 @@ async function init(){
 		    ).view
 		);
 	}
-	console.log(daily_views);
-
+	let addr = new URL(window.location);
+	addr.searchParams.set("config", encodeURIComponent(JSON.stringify(config)));
+	addr.searchParams.set("policies", encodeURIComponent(JSON.stringify(policies)));
+	urlDisplay.value = addr;
 }
 
 function play(event){
@@ -233,12 +244,25 @@ function handlePolicyData(data){
 	view.insert("policy_data", data).run();
 }
 
+
+
 worker.onmessage = function(e){
 	let msg = e.data;
 	let tp = msg.type;
 	switch (tp){
 		case "DEFAULT_CONFIG":
 			fillConfigForm(msg.args.config);
+           let url = new URL(window.location);
+           if (url.searchParams.has("config")){
+                let configstr = url.searchParams.get("config");
+                fillConfigForm(JSON.parse(decodeURIComponent(configstr)));
+            }
+            if (url.searchParams.has("policies")){
+                let policystr = url.searchParams.get("policies");
+                let policies = JSON.parse(decodeURIComponent(policystr))
+                fillPolicyForm(policies);
+            }
+            urlDisplay.value = url;
 			break;
 		case "STARTED":
 		    isPaused = false;

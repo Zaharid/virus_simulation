@@ -2,7 +2,7 @@ import $ from "jquery";
 import vegaEmbed from 'vega-embed';
 
 import {dist_spec, timeprofile_spec} from "./plot_specs.js";
-import {parseForm} from "./formutils.js";
+import {parseForm, fillForm} from "./formutils.js";
 
 let householdView = null;
 
@@ -77,20 +77,7 @@ const configureForm = document.getElementById("configure-form");
 
 
 export function fillConfigForm(config){
-	for (let [key, value] of Object.entries(config)){
-		let ele = document.getElementById(key);
-		if(ele.getAttribute("data-units")==="percent"){
-			if(ele.getAttribute("data-type")==="list"){
-				value = value.map((x) => {return Number((x*100).toPrecision(5))});
-			}else{
-				value= Number((value*100).toPrecision(5));
-			}
-		}
-		ele.value = value;
-		ele.setAttribute("data-original", value);
-		let ev = new Event("input");
-		ele.dispatchEvent(ev);
-	}
+	fillForm(configureForm, config);
 }
 
 export function getConfig(){

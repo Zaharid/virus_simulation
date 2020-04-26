@@ -7,6 +7,10 @@
     <meta name="author" content="Zahari Kassabov">
     <title>Virus propagation simulation</title>
     <style>
+        #urlshare {
+            width: 100%;
+        }
+
         footer {
             padding-top: 3rem;
             padding-bottom: 3rem;
@@ -683,6 +687,17 @@
                 <div class="row">
                     <div class="col">
                         <pre id="display" class="text-center">The simulation may consume your CPU resources.</pre>
+                    </div>
+                </div>
+                <div colass="row">
+                    <div class="col-md-12">
+                        <p class="text-center lead">Share the settings of this simulation</p>
+                    </div>
+                    <div class="col-md-12 text-center">
+                        <button id="copyurl" class="btn btn-primary">Copy URL</button>
+                    </div>
+                    <div class="col-md-12">
+                        <input readonly="" id="urlshare" class="text-center"></input>
                     </div>
                 </div>
             </div>
