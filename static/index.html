@@ -665,19 +665,22 @@
 
 
         </section>
-        <div class="py-5 bg-light">
+        <div class="py-lg-5 bg-light">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="core-vis" id="vis"></div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="core-vis" id="vis-severe"></div>
-                    </div>
+                    <div class="col-md-6 core-vis" id="vis"></div>
+                    <div class="col-md-6 core-vis" id="vis-severe"></div>
+                </div>
 
+                <div class="row">
+                    <div class="col-md-4 core-vis vis-daily" data-cat="Infected (Undetected)"></div>
+                    <div class="col-md-4 core-vis vis-daily" data-cat="Infected (Detected)"></div>
+                    <div class="col-md-4 core-vis vis-daily" data-cat="Severe"></div>
+                    <div class="col-md-4 core-vis vis-daily" data-cat="Dead"></div>
+                    <div class="col-md-4 core-vis vis-daily" data-cat="Immune"></div>
+                    <div class="col-md-4 core-vis vis-daily" data-cat="Susceptible"></div>
                 </div>
                 <div class="row">
-
                     <div class="col">
                         <pre id="display" class="text-center">The simulation may consume your CPU resources.</pre>
                     </div>

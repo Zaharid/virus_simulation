@@ -6,7 +6,7 @@ import $ from "jquery";
 import vegaEmbed from 'vega-embed';
 
 
-import {population_spec, severe_spec} from "./plot_specs.js"
+import {population_spec, severe_spec, daily_events_spec} from "./plot_specs.js"
 import {fillConfigForm, getConfig} from './forms.js';
 import {getPolicies} from './policy_forms.js'
 
@@ -20,6 +20,7 @@ const resetButton = document.getElementById("reset");
 
 let view = null;
 let severe_view = null;
+let daily_views = [];
 
 
 let worker = new Worker("./worker.js");
@@ -74,9 +75,9 @@ async function init(){
 	};
 	view = (
 		await vegaEmbed(
-			"#vis",
-			population_spec(config.total_population),
-			opts
+				"#vis",
+				population_spec(config.total_population),
+				opts
 			)
 	).view;
 
@@ -89,11 +90,31 @@ async function init(){
 
 	severe_view = (
 		await vegaEmbed(
-			"#vis-severe",
-			severe_spec,
-			severe_opts
+				"#vis-severe",
+				severe_spec,
+				severe_opts
 			)
 	).view;
+
+	const daily_opts = {
+		"mode": "vega-lite",
+		"padding":{"left": 40, "top": 5, right: 5, "bottom": 20},
+		"actions": false
+	};
+
+	let daily_view_divs = document.querySelectorAll(".vis-daily");
+	for (let v of daily_view_divs){
+		daily_views.push(
+			(
+				await vegaEmbed(
+				    v,
+				    daily_events_spec(v.getAttribute("data-cat")),
+				    daily_opts
+			    )
+		    ).view
+		);
+	}
+	console.log(daily_views);
 
 }
 
@@ -161,6 +182,18 @@ function push_severe(data){
 	];
 }
 
+function push_daily(data){
+	let plot_values = []
+	let time = data.time;
+	console.log(data.day_counter_output);
+	for (let [key, value] of Object.entries(data.day_counter_output)){
+		plot_values.push({"time": time, "Daily changes": key, "daily new": value});
+	}
+	console.log(plot_values);
+	return plot_values;
+
+}
+
 
 playPauseButton.textContent = "▶";
 
@@ -169,14 +202,19 @@ let stopped_once = false;
 function handleIncomingData(data){
 	//Merge severe and unattended for simplicity of reportying
 	let counter_output = data.abs_counter_output;
-	if (counter_output["Unattended"] > 0){
-		counter_output["Severe"] += counter_output["Unattended"];
-	}
+	counter_output["Severe"] += counter_output["Unattended"];
 	delete counter_output["Unattended"];
+	let day_output = data.day_counter_output;
+	day_output["Severe"] += day_output["Unattended"];
+	delete day_output["Unattended"];
 	let plot_values = push_counter(data);
 	display.innerHTML = JSON.stringify(counter_output, null, 4);
 	view.insert("mydata", plot_values).run();
 	severe_view.insert("mydata", push_severe(data)).run();
+	let daily_data = push_daily(data);
+	for (let dv of daily_views){
+		dv.insert("mydata", daily_data).run();
+	}
 	if(data.time % 10 === 0){
 		worker.postMessage({"type": "ACK", "args": data.time});
 	}

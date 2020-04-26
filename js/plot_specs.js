@@ -1,59 +1,60 @@
 
 //I have no idea why, but sorting by "value" works even though it doesn't make sense.
 export const timeprofile_spec =  function(title, xlabel, ylabel){
-	if (xlabel==undefined){
-	   xlabel = "day";
-	}
-	if (ylabel==undefined){
-		ylabel = "Probability (%)";
-	}
+    if (xlabel==undefined){
+       xlabel = "day";
+    }
+    if (ylabel==undefined){
+        ylabel = "Probability (%)";
+    }
  return {
-	  "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
-	  "description": "A time profile chart",
-	  "title": title,
-	  "width": "container",
-	  "data": {
-		  "name": "mydata"
-	  },
-	  "transform": [{"calculate": "isNumber(datum.day) ? datum.day : MAX_VALUE ", "as": "sortvalue"}],
-	  "layer": [
-	  {
-	  "mark": "bar",
-	  "encoding": {
-		"x": {
-			"field": "day", "title": xlabel, "type": "ordinal", "axis": {
-				"labelAngle": 0}
-			,
-			"sort": {"field": "sortvalue", "type": "quantitative"}
-		},
-		"y": {"field": "value", "type": "quantitative", "title": ylabel},
-		"order": {"field": "value", "type": "ordinal"},
-	  }
-	  },
-	  {
-	  "mark": "bar",
-	  "transform": [{"filter": "datum.day==='...'"}],
-	  "encoding": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+      "description": "A time profile chart",
+      "title": title,
+      "width": "container",
+      "data": {
+          "name": "mydata"
+      },
+      "transform": [{"calculate": "isNumber(datum.day) ? datum.day : MAX_VALUE ", "as": "sortvalue"}],
+      "layer": [
+      {
+      "mark": "bar",
+      "encoding": {
+        "x": {
+            "field": "day", "title": xlabel, "type": "ordinal", "axis": {
+                "labelAngle": 0}
+            ,
+            "sort": {"field": "sortvalue", "type": "quantitative"}
+        },
+        "y": {"field": "value", "type": "quantitative", "title": ylabel},
+        "order": {"field": "value", "type": "ordinal"},
+      }
+      },
+      {
+      "mark": "bar",
+      "transform": [{"filter": "datum.day==='...'"}],
+      "encoding": {
 
-		"x": {
-			"field": "day", "type": "ordinal", "axis": {"labelAngle": 0}, "sort": {"field": "sortvalue", "type": "quantitative"}
-		},
-		"color": {"value": "#cccccc"},
-		"y": {
-			"field": "value",
-			"type": "quantitative"
-		},
-		"tooltip": {"value": "Last value is repeated subsequent days"},
-		"order": {"field": "value", "type": "ordinal"},
-	  }
-	  }
+        "x": {
+            "field": "day", "type": "ordinal", "axis": {"labelAngle": 0}, "sort": {"field": "sortvalue", "type": "quantitative"}
+        },
+        "color": {"value": "#cccccc"},
+        "y": {
+            "field": "value",
+            "type": "quantitative"
+        },
+        "tooltip": {"value": "Last value is repeated subsequent days"},
+        "order": {"field": "value", "type": "ordinal"},
+      }
+      }
 
 
-	  ]
-	};
+      ]
+    };
 }
 
 const categories = ["Severe", "Dead", "Infected (Undetected)", "Infected (Detected)", "Immune", "Susceptible"];
+const colors = ["#e7298a", "#666666", "#d95f02", "#e6ab02", "#66a61e", "#1b9e77"];
 
 
 export const dist_spec = {
@@ -62,7 +63,7 @@ export const dist_spec = {
   "description": "Distribution",
   "width": "container",
   "data": {
-	  "name": "mydata"
+      "name": "mydata"
   },
   "mark": "bar",
   "encoding": {
@@ -94,6 +95,8 @@ export function population_spec(total_population) {
                         "type": "quantitative",
                         "title": "day since outbreak",
                         "scale": {"nice": false},
+                        "axis": {"tickMinStep": 1},
+
                     },
                     "color": {
                         "field": "population",
@@ -101,7 +104,7 @@ export function population_spec(total_population) {
                         "sort": categories,
                         "scale": {
                             "domain": categories,
-                            "range": ["#e7298a", "#666666", "#d95f02", "#e6ab02", "#66a61e", "#1b9e77"]
+                            "range": colors,
                         },
                     },
                     "y": {
@@ -112,6 +115,7 @@ export function population_spec(total_population) {
                         "scale": {
                             "domain": [0, total_population]
                         },
+                        "axis": {"tickMinStep": 1},
                     },
                     "order": {
                         "field": "cat_order",
@@ -170,74 +174,111 @@ export function population_spec(total_population) {
 }
 
 export const severe_spec = {
-	"$schema": "https://vega.github.io/schema/vega-lite/v4.json",
-	"data": {"name": "mydata"},
-	"width": "container",
-	"title": "Hospital status",
-	"height": 250,
-	"layer": [
-		{
-			"mark": "line",
-			"encoding":{
-				"x":{
-					"field": "time",
-					"type": "quantitative",
-					"title": "day since outbreak",
-					"scale": {"nice": false},
-				},
-				"y":{
-					"field": "value",
-					"type": "quantitative",
-					"title": "Number of patients"
-				},
-				"color":{
-					"field": "kind",
-					"title": "",
-					"type": "nominal",
-					"scale": {
-						"domain": [ "Severe patients",  "Hospital capacity"],
-						"range": ["#e7298a", "black"]
-					}
-				}
-			}
-		},
-		{
-			"transform": [{"filter": {"and": [
-				"datum.kind == 'Severe patients'",
-				"datum.value >= datum.current_capacity"
-			]}}],
-			"mark": "line",
-			"encoding": {
-				"x":{
-					"field": "time",
-					"type": "quantitative"
-				},
-				"y":{
-					"field": "value",
-					"type": "quantitative",
-				},
-				"color": {"value": "#e7298a"},
-				"strokeWidth": {"value": 5}
-			}
-		},
-		{
-			"data": {"name": "policy_data"},
-			"mark": "rule",
-			"encoding":{
-				"x": {
-					"field": "time",
-					"type": "quantitative"
-				},
-				"color": {"value": "#7570b3"},
-				"strokeWidth": {"value": 2},
-				"tooltip": [
-					{"field": "policy", "type": "nominal"},
-					{"field": "time", "type": "quantitative", "title": "day"},
-				],
-			},
-		},
-	],
+    "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+    "data": {"name": "mydata"},
+    "width": "container",
+    "title": "Hospital status",
+    "height": 250,
+    "layer": [
+        {
+            "mark": "line",
+            "encoding":{
+                "x":{
+                    "field": "time",
+                    "type": "quantitative",
+                    "title": "day since outbreak",
+                    "scale": {"nice": false},
+                    "axis": {"tickMinStep": 1},
+                },
+                "y":{
+                    "field": "value",
+                    "type": "quantitative",
+                    "title": "Number of patients",
+                    "axis": {"tickMinStep": 1},
+                },
+                "color":{
+                    "field": "kind",
+                    "title": "",
+                    "type": "nominal",
+                    "scale": {
+                        "domain": [ "Severe patients",  "Hospital capacity"],
+                        "range": ["#e7298a", "black"]
+                    }
+                }
+            }
+        },
+        {
+            "transform": [{"filter": {"and": [
+                "datum.kind == 'Severe patients'",
+                "datum.value >= datum.current_capacity"
+            ]}}],
+            "mark": "line",
+            "encoding": {
+                "x":{
+                    "field": "time",
+                    "type": "quantitative"
+                },
+                "y":{
+                    "field": "value",
+                    "type": "quantitative",
+                },
+                "color": {"value": "#e7298a"},
+                "strokeWidth": {"value": 5}
+            }
+        },
+        {
+            "data": {"name": "policy_data"},
+            "mark": "rule",
+            "encoding":{
+                "x": {
+                    "field": "time",
+                    "type": "quantitative"
+                },
+                "color": {"value": "#7570b3"},
+                "strokeWidth": {"value": 2},
+                "tooltip": [
+                    {"field": "policy", "type": "nominal"},
+                    {"field": "time", "type": "quantitative", "title": "day"},
+                ],
+            },
+        },
+    ],
 
 }
 
+//Facet doesn't work unless you specify default values
 
+export function daily_events_spec(cat){
+    return {
+        "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+        "width": "container",
+        "title": `Daily new ${cat}`,
+        "height": 250,
+        "data": {"name": "mydata"},
+        "transform": [{"filter": `datum['Daily changes']=== '${cat}'`}],
+        "config": {
+            "bar":{
+                //"continuousBandSize": 30,
+            },
+        },
+
+        "mark": "bar",
+        "encoding": {
+            "x": {
+                "field": "time",
+                "type": "quantitative",
+                "title": "day since outbreak",
+                "scale": {"nice":false},
+                "axis": {"tickMinStep": 1},
+            },
+            "y": {
+                "field": "daily new",
+                "type": "quantitative",
+                "axis": {"tickMinStep": 1},
+            },
+            "color": {
+                "value": colors[categories.indexOf(cat)],
+            }
+        }
+    };
+}

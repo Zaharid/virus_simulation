@@ -122,7 +122,7 @@ function run(){
 
 	let newpolocies = [];
 	for (let p of policies){
-		if (checkTrigger(abs_counter_data, p.trigger)){
+		if (checkTrigger(abs_counter_output, p.trigger)){
 			runPolicy(p.policy, p.data);
 			postMessage({
 				"type": "POLICY_APPLIED",
@@ -169,7 +169,7 @@ onmessage = function(e){
 			break;
 		case "ACK":
 			last_received_time = msg.args;
-			if(queue_full && time - last_received_time < 20){
+			if(queue_full && simulation.get_time() - last_received_time < 20){
 				queue_full = false;
 				if(!isPaused){
 					timeoutID = setTimeout(run);
