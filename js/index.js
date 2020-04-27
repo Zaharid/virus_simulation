@@ -240,6 +240,9 @@ function handleIncomingData(data){
 function handlePolicyData(data){
 	severe_view.insert("policy_data", data).run();
 	view.insert("policy_data", data).run();
+    for (let v of daily_views){
+        v.insert("policy_data", data).run();
+    }
 }
 
 

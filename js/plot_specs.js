@@ -72,6 +72,48 @@ export const dist_spec = {
   }
 }
 
+const day_since_outbreak_x = {
+    x: {
+        field: "time",
+        type: "quantitative",
+        title: "day since outbreak",
+        scale: {nice: false},
+        axis: {tickMinStep: 1},
+    },
+}
+
+const policy_mark_layer = [
+    {
+        data: {
+            name: "policy_data"
+        },
+        mark: "rule",
+        encoding: {
+            x: {
+                field: "time",
+                type: "quantitative"
+            },
+            color: {
+                value: "#7570b3"
+            },
+            strokeWidth: {
+                value: 2
+            },
+            tooltip: [{
+                    field: "policy",
+                    type: "nominal"
+                },
+                {
+                    field: "time",
+                    type: "quantitative",
+                    title: "day"
+                },
+            ],
+        },
+    },
+
+]
+
 export function population_spec(total_population) {
     return {
         "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
@@ -90,14 +132,7 @@ export function population_spec(total_population) {
                     "type": "area",
                 },
                 "encoding": {
-                    "x": {
-                        "field": "time",
-                        "type": "quantitative",
-                        "title": "day since outbreak",
-                        "scale": {"nice": false},
-                        "axis": {"tickMinStep": 1},
-
-                    },
+                    ...day_since_outbreak_x,
                     "color": {
                         "field": "population",
                         "type": "nominal",
@@ -139,35 +174,8 @@ export function population_spec(total_population) {
                     ]
                 }
             },
+            ...policy_mark_layer,
 
-            {
-                "data": {
-                    "name": "policy_data"
-                },
-                "mark": "rule",
-                "encoding": {
-                    "x": {
-                        "field": "time",
-                        "type": "quantitative"
-                    },
-                    "color": {
-                        "value": "#7570b3"
-                    },
-                    "strokeWidth": {
-                        "value": 2
-                    },
-                    "tooltip": [{
-                            "field": "policy",
-                            "type": "nominal"
-                        },
-                        {
-                            "field": "time",
-                            "type": "quantitative",
-                            "title": "day"
-                        },
-                    ],
-                },
-            },
         ]
 
     };
@@ -183,13 +191,7 @@ export const severe_spec = {
         {
             "mark": "line",
             "encoding":{
-                "x":{
-                    "field": "time",
-                    "type": "quantitative",
-                    "title": "day since outbreak",
-                    "scale": {"nice": false},
-                    "axis": {"tickMinStep": 1},
-                },
+                ...day_since_outbreak_x,
                 "y":{
                     "field": "value",
                     "type": "quantitative",
@@ -226,59 +228,36 @@ export const severe_spec = {
                 "strokeWidth": {"value": 5}
             }
         },
-        {
-            "data": {"name": "policy_data"},
-            "mark": "rule",
-            "encoding":{
-                "x": {
-                    "field": "time",
-                    "type": "quantitative"
-                },
-                "color": {"value": "#7570b3"},
-                "strokeWidth": {"value": 2},
-                "tooltip": [
-                    {"field": "policy", "type": "nominal"},
-                    {"field": "time", "type": "quantitative", "title": "day"},
-                ],
-            },
-        },
+        ...policy_mark_layer,
     ],
 
 }
 
-//Facet doesn't work unless you specify default values
 
 export function daily_events_spec(cat){
     return {
-        "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
-        "width": "container",
-        "title": `Daily new ${cat}`,
-        "height": 250,
-        "data": {"name": "mydata"},
-        "transform": [{"filter": `datum['Daily changes']=== '${cat}'`}],
-        "config": {
-            "bar":{
-                //"continuousBandSize": 30,
+        $schema: "https://vega.github.io/schema/vega-lite/v4.json",
+        width: "container",
+        title: `Daily new ${cat}`,
+        height: 250,
+        layer: [
+            {
+                data: {name: "mydata"},
+                transform: [{"filter": `datum['Daily changes']=== '${cat}'`}],
+                mark: "bar",
+                encoding: {
+                    ...day_since_outbreak_x,
+                    y: {
+                        field: "daily new",
+                        type: "quantitative",
+                        axis: {"tickMinStep": 1},
+                    },
+                    color: {
+                        value: colors[categories.indexOf(cat)],
+                    }
+                }
             },
-        },
-
-        "mark": "bar",
-        "encoding": {
-            "x": {
-                "field": "time",
-                "type": "quantitative",
-                "title": "day since outbreak",
-                "scale": {"nice":false},
-                "axis": {"tickMinStep": 1},
-            },
-            "y": {
-                "field": "daily new",
-                "type": "quantitative",
-                "axis": {"tickMinStep": 1},
-            },
-            "color": {
-                "value": colors[categories.indexOf(cat)],
-            }
-        }
+            ...policy_mark_layer,
+        ]
     };
 }
