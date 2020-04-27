@@ -1,69 +1,74 @@
-<div align="center">
+# A coronavirus simulation
 
-  <h1><code>wasm-pack-template</code></h1>
+A simplistic model of disease propagation and the effect of public policies on
+it. Runs on the browser. The backend is implemented with Rust + WebAssembley and
+the front end with JavaScript.
 
-  <strong>A template for kick starting a Rust and WebAssembly project using <a href="https://github.com/rustwasm/wasm-pack">wasm-pack</a>.</strong>
+The result is deployed at:
 
-  <p>
-    <a href="https://travis-ci.org/rustwasm/wasm-pack-template"><img src="https://img.shields.io/travis/rustwasm/wasm-pack-template.svg?style=flat-square" alt="Build Status" /></a>
-  </p>
+> <https://zigzah.com/virus/>
 
-  <h3>
-    <a href="https://rustwasm.github.io/docs/wasm-pack/tutorials/npm-browser-packages/index.html">Tutorial</a>
-    <span> | </span>
-    <a href="https://discordapp.com/channels/442252698964721669/443151097398296587">Chat</a>
-  </h3>
+# Why
 
-  <sub>Built with 🦀🕸 by <a href="https://rustwasm.github.io/">The Rust and WebAssembly Working Group</a></sub>
-</div>
+The main purpose is to explain myself the virus propagation. Hopefully the
+result can be useful for others as well.
 
-## About
+# Model description
 
-[**📚 Read this template tutorial! 📚**][template-docs]
+The model is described in the
+[docs](https://github.com/Zaharid/virus_simulation/tree/master/doc).
 
-This template is designed for compiling Rust libraries into WebAssembly and
-publishing the resulting package to NPM.
+# Developing
 
-Be sure to check out [other `wasm-pack` tutorials online][tutorials] for other
-templates and usages of `wasm-pack`.
+I have only tested the setup on an Ubuntu based system.
 
-[tutorials]: https://rustwasm.github.io/docs/wasm-pack/tutorials/index.html
-[template-docs]: https://rustwasm.github.io/docs/wasm-pack/tutorials/npm-browser-packages/index.html
+You will need an up to date installation of
+[Rust](https://www.rust-lang.org/tools/install),
+[wasm-pack](https://rustwasm.github.io/wasm-pack/installer/),
+[nodejs](https://nodejs.org/en/) and [npm](https://www.npmjs.com/). Note that
+nodejs is fairly outdated in the Ubuntu packages. I used the trick described
+[here](https://askubuntu.com/a/480642/293290) to get a version that works.
 
-## 🚴 Usage
+The original layout of the project was based on
+[wasm-pack-template](https://github.com/rustwasm/wasm-pack-template).
 
-### 🐑 Use `cargo generate` to Clone this Template
-
-[Learn more about `cargo generate` here.](https://github.com/ashleygwilliams/cargo-generate)
+With this setup, use
 
 ```
-cargo generate --git https://github.com/rustwasm/wasm-pack-template.git --name my-project
-cd my-project
+npm install
 ```
+in the root folder of this repository to obtain the JavaScript dependencies.
 
-### 🛠️ Build with `wasm-pack build`
-
-```
-wasm-pack build
-```
-
-### 🔬 Test in Headless Browsers with `wasm-pack test`
+Use
 
 ```
-wasm-pack test --headless --firefox
+npm run start
+```
+to compile and run a development server and
+```
+npm run build
 ```
 
-### 🎁 Publish to NPM with `wasm-pack publish`
+to obtain a deployable version. Note that you do need some sort of URL based
+server in order to retrieve WebAssembley files. `file://` locations do not work.
 
-```
-wasm-pack publish
-```
+# File structure
 
-## 🔋 Batteries Included
+The bulk of the simulation code goes into
+[src/lib.rs](https://github.com/Zaharid/virus_simulation/blob/master/src/lib.rs).
 
-* [`wasm-bindgen`](https://github.com/rustwasm/wasm-bindgen) for communicating
-  between WebAssembly and JavaScript.
-* [`console_error_panic_hook`](https://github.com/rustwasm/console_error_panic_hook)
-  for logging panic messages to the developer console.
-* [`wee_alloc`](https://github.com/rustwasm/wee_alloc), an allocator optimized
-  for small code size.
+The rust code is compiled to WebAssembley and it is then interfaced to the JS
+frontend. The simulation code lives in a separate thread and is interfaced to
+the rest of the frontend with a  [web
+worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers).
+The worker code is in [webworker/worker.js](https://github.com/Zaharid/virus_simulation/blob/master/webworker/worker.js).
+
+The user interface code is in the
+[js/](https://github.com/Zaharid/virus_simulation/tree/master/js) folder. In
+particular
+[index.js](https://github.com/Zaharid/virus_simulation/blob/master/js/index.js)
+is the entry point and handles  the communication with the web worker.
+
+[Vega-lite](https://vega.github.io/vega-lite/) is used for plotting. The
+specification code is in
+[js/plot_specs.js](https://github.com/Zaharid/virus_simulation/blob/master/js/plot_specs.js).
