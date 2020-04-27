@@ -157,15 +157,15 @@ enum State {
 }
 
 impl State {
-    fn index(&self) -> usize{
+    fn index(&self) -> usize {
         match self {
-            State::Susceptible =>0,
-            State::Infected(_) =>1,
-            State::Detected(_) =>2,
-            State::Severe(_) =>3,
-            State::Unattended =>4,
-            State::Immune(_) =>5,
-            State::Dead =>6,
+            State::Susceptible => 0,
+            State::Infected(_) => 1,
+            State::Detected(_) => 2,
+            State::Severe(_) => 3,
+            State::Unattended => 4,
+            State::Immune(_) => 5,
+            State::Dead => 6,
         }
     }
 }
@@ -201,41 +201,67 @@ impl Graph {
     }
 }
 
-
 #[derive(Serialize, Deserialize, Debug)]
-struct Counter{
-    abs_counter: [i32;7],
-    day_counter: [i32;7],
+struct Counter {
+    abs_counter: [i32; 7],
+    day_counter: [i32; 7],
 }
 
-
-
-impl Counter{
-    fn new () -> Counter{
-        let abs_counter = [0,0,0,0,0,0,0];
-        let day_counter = [0,0,0,0,0,0,0];
-        Counter{abs_counter, day_counter}
+impl Counter {
+    fn new() -> Counter {
+        let abs_counter = [0, 0, 0, 0, 0, 0, 0];
+        let day_counter = [0, 0, 0, 0, 0, 0, 0];
+        Counter {
+            abs_counter,
+            day_counter,
+        }
     }
-    fn register(&mut self, s:State){
+    fn register(&mut self, s: State) {
         self.abs_counter[s.index()] += 1;
     }
-    fn state_count(&self, s: State) -> i32{
+    fn state_count(&self, s: State) -> i32 {
         self.abs_counter[s.index()]
     }
-    fn transit(&mut self, from: State, to: State){
+    fn transit(&mut self, from: State, to: State) {
         self.abs_counter[from.index()] -= 1;
         self.abs_counter[to.index()] += 1;
-        if from.index() != to.index(){
+        if from.index() != to.index() {
             self.day_counter[to.index()] += 1;
         }
     }
-    fn reset_day_counter(&mut self){
-        for i in self.day_counter.iter_mut(){ *i = 0};
+    fn reset_day_counter(&mut self) {
+        for i in self.day_counter.iter_mut() {
+            *i = 0
+        }
     }
-
 }
 
+struct Averager {
+    sum: i32,
+    count: usize,
+}
 
+impl Averager {
+    fn new() -> Self {
+        let sum = 0;
+        let count = 0;
+        Self { sum, count }
+    }
+
+    fn push(&mut self, ele: i32) {
+        self.sum += ele;
+        self.count += 1;
+    }
+
+    fn reset(&mut self) {
+        self.sum = 0;
+        self.count = 0;
+    }
+
+    fn get(&self) -> f64 {
+        self.sum as f64 / self.count as f64
+    }
+}
 
 #[wasm_bindgen]
 pub struct Simulation {
@@ -245,6 +271,8 @@ pub struct Simulation {
     counter: Counter,
     states: Vec<State>,
     worker_workplaces: Vec<usize>,
+    infections_caused: Vec<usize>,
+    r_average: Averager,
     last_disabled_workplace: usize,
     config: Config,
     time: usize,
@@ -323,6 +351,9 @@ impl Simulation {
             states[j] = State::Infected(0);
             counter.transit(State::Susceptible, State::Infected(0));
         }
+        let mut infections_caused = Vec::with_capacity(nnodes);
+        infections_caused.resize_with(nnodes, Default::default);
+        let r_average = Averager::new();
         let time = 0;
         let last_disabled_workplace = 0;
         Simulation {
@@ -332,6 +363,8 @@ impl Simulation {
             world_graph,
             counter,
             worker_workplaces,
+            infections_caused,
+            r_average,
             states,
             last_disabled_workplace,
             config,
@@ -350,6 +383,7 @@ impl Simulation {
 
     pub fn tick(&mut self) {
         self.counter.reset_day_counter();
+        self.r_average.reset();
         let mut newstates: Vec<State> = Vec::with_capacity(self.states.len());
 
         //Don't iterate over state here so we can mutably borrow `self` later
@@ -357,8 +391,8 @@ impl Simulation {
             let s = self.states[i];
             let newstate = match s {
                 State::Susceptible => self.get_infected(i),
-                State::Infected(t) => self.transit_infected(t),
-                State::Detected(t) => self.transit_detected(t),
+                State::Infected(t) => self.transit_infected(t, i),
+                State::Detected(t) => self.transit_detected(t, i),
                 State::Unattended => self.transit_unattended(),
                 State::Severe(t) => self.transit_severe(t),
                 State::Immune(t) => self.transit_immune(t),
@@ -372,6 +406,10 @@ impl Simulation {
 
     pub fn get_counter(&self) -> JsValue {
         JsValue::from_serde(&self.counter).unwrap()
+    }
+
+    pub fn get_daily_r(&self) -> f64{
+        self.r_average.get()
     }
 
     pub fn get_hospital_capacity(&self) -> usize {
@@ -437,6 +475,7 @@ impl Simulation {
                             > rand::random()
                         {
                             let ns = State::Infected(0);
+                            self.infections_caused[*n] += 1;
                             self.counter.transit(State::Susceptible, ns);
                             return ns;
                         }
@@ -457,7 +496,7 @@ impl Simulation {
         // Product (1-p_i) = Exp(Sum(Log(1-p_i)))
         let logs = weights.iter().map(|x| (-(*x)).ln_1p());
         let pnotrans = logs.sum::<f64>().exp();
-        // The ptobabilities are c*Pi..., pnotrans, where c is fixed by normalization.
+        // The probabilities are c*Pi..., pnotrans, where c is fixed by normalization.
         // Reweight pnotrans instead.
         let rwpnotrans = if pnotrans < 1. {
             let wsum: f64 = weights.iter().sum();
@@ -472,7 +511,23 @@ impl Simulation {
         states[index]
     }
 
-    fn transit_infected(&mut self, t: usize) -> State {
+    fn handle_r0(&mut self, i: usize, s: State) {
+        //Exhaustive match here is on purpose.
+        match s {
+            State::Unattended
+            | State::Susceptible
+            | State::Severe(_)
+            | State::Immune(_)
+            | State::Dead => {
+                let ninfected = self.infections_caused[i];
+                self.r_average.push(ninfected as i32);
+                self.infections_caused[i] = 0;
+            }
+            State::Infected(_) | State::Detected(_) => {}
+        }
+    }
+
+    fn transit_infected(&mut self, t: usize, i: usize) -> State {
         let severe_state = if self.hospitals_full() {
             State::Unattended
         } else {
@@ -490,11 +545,12 @@ impl Simulation {
             sat_index(&self.config.infected_severe_profile, t),
         ];
         let s = Simulation::sample_state(&opts, &w);
+        self.handle_r0(i, s);
         self.counter.transit(State::Infected(0), s);
         s
     }
 
-    fn transit_detected(&mut self, t: usize) -> State {
+    fn transit_detected(&mut self, t: usize, i: usize) -> State {
         let severe_state = if self.hospitals_full() {
             State::Unattended
         } else {
@@ -506,6 +562,7 @@ impl Simulation {
             sat_index(&self.config.infected_severe_profile, t),
         ];
         let s = Simulation::sample_state(&opts, &w);
+        self.handle_r0(i, s);
         self.counter.transit(State::Detected(0), s);
         s
     }

@@ -6,7 +6,7 @@ import $ from "jquery";
 import vegaEmbed from 'vega-embed';
 
 
-import {population_spec, severe_spec, daily_events_spec} from "./plot_specs.js"
+import {population_spec, severe_spec, daily_events_spec, r_spec} from "./plot_specs.js"
 import {fillConfigForm, getConfig} from './forms.js';
 import {fillPolicyForm, getPolicies} from './policy_forms.js'
 
@@ -23,6 +23,7 @@ const copyURL = document.getElementById("copyurl");
 let view = null;
 let severe_view = null;
 let daily_views = [];
+let r_view = null;
 
 
 let worker = new Worker("./worker.js");
@@ -123,6 +124,19 @@ async function init(){
 		    ).view
 		);
 	}
+
+    const r_opts = {
+		"mode": "vega-lite",
+		"padding":{"left": 40, "top": 5, right: 5, "bottom": 20},
+		"actions": false
+	};
+    r_view = (
+        await vegaEmbed(
+            "#vis-r",
+            r_spec,
+            r_opts,
+        )
+    ).view;
 	let addr = new URL(window.location);
 	addr.searchParams.set("config", encodeURIComponent(JSON.stringify(config)));
 	addr.searchParams.set("policies", encodeURIComponent(JSON.stringify(policies)));
@@ -224,6 +238,11 @@ function handleIncomingData(data){
 	for (let dv of daily_views){
 		dv.insert("mydata", daily_data).run();
 	}
+    if (!isNaN(data.day_r)){
+        console.log({time: data.time, r: data.day_r});
+        r_view.insert("mydata", {time: data.time, r: data.day_r}).run();
+    }
+
 	if(data.time % 10 === 0){
 		worker.postMessage({"type": "ACK", "args": data.time});
 	}
@@ -243,6 +262,7 @@ function handlePolicyData(data){
     for (let v of daily_views){
         v.insert("policy_data", data).run();
     }
+    r_view.insert("policy_data", data).run();
 }
 
 

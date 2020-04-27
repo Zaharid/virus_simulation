@@ -239,7 +239,7 @@ export function daily_events_spec(cat){
         $schema: "https://vega.github.io/schema/vega-lite/v4.json",
         width: "container",
         title: `Daily new ${cat}`,
-        height: 250,
+        height: 225,
         layer: [
             {
                 data: {name: "mydata"},
@@ -260,4 +260,54 @@ export function daily_events_spec(cat){
             ...policy_mark_layer,
         ]
     };
+}
+
+export const r_spec = {
+    $schema: "https://vega.github.io/schema/vega-lite/v4.json",
+    width: "container",
+    title: "Reproduction number",
+    height: 100,
+    data: {name: "mydata"},
+    transform: [
+        {
+            frame: [-5, 5],
+            window: [
+                {
+                    field: "r",
+                    op: "mean",
+                    as: "rolling_mean",
+                },
+            ],
+
+        },
+    ],
+    layer: [
+        {
+            mark: {
+                type: "line",
+            },
+            encoding: {
+                ...day_since_outbreak_x,
+                y: {
+                    field: "rolling_mean",
+                    type: "quantitative",
+                    title: "Reproduction number",
+                }
+
+            }
+
+        },
+        {
+            data: {values: [{y: 1}]},
+            mark: "rule",
+            encoding: {
+                y: {
+                    field: "y",
+                    type: "quantitative",
+                },
+            }
+
+        },
+        ...policy_mark_layer,
+    ]
 }

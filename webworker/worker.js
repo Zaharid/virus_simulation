@@ -57,6 +57,7 @@ async function init(args){
 			"abs_counter_output": abs_counter_output,
 			"day_counter_output": day_counter_output,
 			"hospital_capacity": simulation.get_hospital_capacity(),
+            "day_r": simulation.get_daily_r(),
 		}
 	});
 	//Actually send messages
@@ -116,6 +117,7 @@ function run(){
 			"abs_counter_output": abs_counter_output,
 			"day_counter_output": day_counter_output,
 			"hospital_capacity": simulation.get_hospital_capacity(),
+            "day_r": simulation.get_daily_r(),
 		}
 	});
 
