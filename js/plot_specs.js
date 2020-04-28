@@ -280,6 +280,7 @@ export const r_spec = {
             ],
 
         },
+        {"filter": "datum.rolling_mean > 0.01"},
     ],
     layer: [
         {
@@ -292,7 +293,8 @@ export const r_spec = {
                     field: "rolling_mean",
                     type: "quantitative",
                     title: "Reproduction number",
-                }
+                    scale: {type: "log"},
+                },
 
             }
 
@@ -305,6 +307,7 @@ export const r_spec = {
                     field: "y",
                     type: "quantitative",
                 },
+                tooltip: {value: "Critical threshold"},
             }
 
         },

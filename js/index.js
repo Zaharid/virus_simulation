@@ -239,7 +239,6 @@ function handleIncomingData(data){
 		dv.insert("mydata", daily_data).run();
 	}
     if (!isNaN(data.day_r)){
-        console.log({time: data.time, r: data.day_r});
         r_view.insert("mydata", {time: data.time, r: data.day_r}).run();
     }
 
