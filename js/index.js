@@ -6,7 +6,7 @@ import $ from "jquery";
 import vegaEmbed from 'vega-embed';
 
 
-import {population_spec, severe_spec, daily_events_spec, r_spec} from "./plot_specs.js"
+import {population_spec, severe_spec, daily_events_spec, r_spec, serial_spec} from "./plot_specs.js"
 import {fillConfigForm, getConfig} from './forms.js';
 import {fillPolicyForm, getPolicies} from './policy_forms.js'
 
@@ -24,6 +24,7 @@ let view = null;
 let severe_view = null;
 let daily_views = [];
 let r_view = null;
+let serial_view = null;
 
 
 let worker = new Worker("./worker.js");
@@ -77,6 +78,10 @@ async function init(){
 	display.innerHTML = "Preparing simulation...";
 	let policies = getPolicies();
 	let config = getConfig();
+	let addr = new URL(window.location);
+	addr.searchParams.set("config", encodeURIComponent(JSON.stringify(config)));
+	addr.searchParams.set("policies", encodeURIComponent(JSON.stringify(policies)));
+	urlDisplay.value = addr;
 	worker.postMessage({"type": "INIT", "args": {"config": config, "policies": policies}});
 	const opts = {
 		"mode": "vega-lite",
@@ -130,17 +135,8 @@ async function init(){
 		"padding":{"left": 40, "top": 5, right: 5, "bottom": 20},
 		"actions": false
 	};
-    r_view = (
-        await vegaEmbed(
-            "#vis-r",
-            r_spec,
-            r_opts,
-        )
-    ).view;
-	let addr = new URL(window.location);
-	addr.searchParams.set("config", encodeURIComponent(JSON.stringify(config)));
-	addr.searchParams.set("policies", encodeURIComponent(JSON.stringify(policies)));
-	urlDisplay.value = addr;
+    r_view = (await vegaEmbed("#vis-r", r_spec, r_opts)).view;
+    serial_view = (await vegaEmbed("#vis-serial", serial_spec, r_opts)).view;
 }
 
 function play(event){
@@ -241,6 +237,9 @@ function handleIncomingData(data){
     if (!isNaN(data.day_r)){
         r_view.insert("mydata", {time: data.time, r: data.day_r}).run();
     }
+    if (!isNaN(data.day_serial)){
+        serial_view.insert("mydata", {time: data.time, serial: data.day_serial}).run();
+    }
 
 	if(data.time % 10 === 0){
 		worker.postMessage({"type": "ACK", "args": data.time});
@@ -262,6 +261,7 @@ function handlePolicyData(data){
         v.insert("policy_data", data).run();
     }
     r_view.insert("policy_data", data).run();
+    serial_view.insert("policy_data", data).run();
 }
 
 

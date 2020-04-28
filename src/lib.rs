@@ -273,6 +273,7 @@ pub struct Simulation {
     worker_workplaces: Vec<usize>,
     infections_caused: Vec<usize>,
     r_average: Averager,
+    serial_interval_average: Averager,
     last_disabled_workplace: usize,
     config: Config,
     time: usize,
@@ -354,6 +355,7 @@ impl Simulation {
         let mut infections_caused = Vec::with_capacity(nnodes);
         infections_caused.resize_with(nnodes, Default::default);
         let r_average = Averager::new();
+        let serial_interval_average = Averager::new();
         let time = 0;
         let last_disabled_workplace = 0;
         Simulation {
@@ -365,6 +367,7 @@ impl Simulation {
             worker_workplaces,
             infections_caused,
             r_average,
+            serial_interval_average,
             states,
             last_disabled_workplace,
             config,
@@ -384,6 +387,7 @@ impl Simulation {
     pub fn tick(&mut self) {
         self.counter.reset_day_counter();
         self.r_average.reset();
+        self.serial_interval_average.reset();
         let mut newstates: Vec<State> = Vec::with_capacity(self.states.len());
 
         //Don't iterate over state here so we can mutably borrow `self` later
@@ -408,8 +412,12 @@ impl Simulation {
         JsValue::from_serde(&self.counter).unwrap()
     }
 
-    pub fn get_daily_r(&self) -> f64{
+    pub fn get_daily_r(&self) -> f64 {
         self.r_average.get()
+    }
+
+    pub fn get_daily_serial_interval(&self) -> f64 {
+        self.serial_interval_average.get()
     }
 
     pub fn get_hospital_capacity(&self) -> usize {
@@ -476,6 +484,7 @@ impl Simulation {
                         {
                             let ns = State::Infected(0);
                             self.infections_caused[*n] += 1;
+                            self.serial_interval_average.push(t as i32);
                             self.counter.transit(State::Susceptible, ns);
                             return ns;
                         }

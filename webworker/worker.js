@@ -58,6 +58,7 @@ async function init(args){
 			"day_counter_output": day_counter_output,
 			"hospital_capacity": simulation.get_hospital_capacity(),
             "day_r": simulation.get_daily_r(),
+            "day_serial": simulation.get_daily_serial_interval(),
 		}
 	});
 	//Actually send messages
@@ -118,6 +119,7 @@ function run(){
 			"day_counter_output": day_counter_output,
 			"hospital_capacity": simulation.get_hospital_capacity(),
             "day_r": simulation.get_daily_r(),
+            "day_serial": simulation.get_daily_serial_interval(),
 		}
 	});
 
