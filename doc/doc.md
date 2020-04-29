@@ -266,6 +266,12 @@ transition trough them is eliminated.
 Agents become more generally aware of the disease and infection rates both at
 the workplace and in random contacts decrease by an amount set by the user.
 
+#### Lockdown
+
+Social contacts are reduced, resulting in a fraction of the World connections
+being disabled.
+
+
 ### Technical details
 
 The code of the simulation can be found here:
