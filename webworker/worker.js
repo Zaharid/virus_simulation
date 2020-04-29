@@ -93,6 +93,9 @@ function runPolicy(policy, data){
 			simulation.multiply_workplace_infectability(1 - data["workplace-reduction"]);
 			simulation.multiply_world_infectability(1 - data["world-reduction"]);
 			break
+        case "lockdown":
+            simulation.disable_fraction_of_world_connections(data["connections_cut_fraction"])
+            break
 	}
 
 }

@@ -454,6 +454,23 @@ impl Simulation {
     pub fn multiply_workplace_infectability(&mut self, coef: f64) {
         self.config.workplace_contact_undetected_coef *= coef;
     }
+
+    pub fn disable_fraction_of_world_connections(&mut self, frac: f64){
+        let mut rng = rand::thread_rng();
+        //Find a better algorithm
+        let mut to_remove: FxHashSet<usize> = Default::default();
+        for i in 0..self.world_graph.left_nodes.len(){
+            for j in self.world_graph.left_nodes[i].iter(){
+                if frac > rng.gen(){
+                    to_remove.insert(*j);
+                }
+            }
+            for j in to_remove.iter(){
+                self.world_graph.remove_link(i,*j);
+            }
+            to_remove.clear();
+        }
+    }
 }
 
 impl Simulation {

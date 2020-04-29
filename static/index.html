@@ -275,6 +275,7 @@
                                     <div class="nav flex-column nav-pills policy-select" role="tablist" aria-orientation="vertical">
                                         <a class="nav-link" id="pill-shut-workplaces" href="#form-shut-workplaces" data-toggle="pill" role="tab" aria-controls="form-shut-workplaces" aria-selected="false">Shut workplaces</a>
                                         <a class="nav-link" id="pill-social-distancing" href="#form-social-distancing" data-toggle="pill" role="tab" aria-controls="form-social-distancing" aria-selected="false">Social distancing</a>
+                                        <a class="nav-link" id="pill-lockdown" href="#form-lockdown" data-toggle="pill" role="tab" aria-controls="form-lockdown" aria-selected="false">Lockdown</a>
                                     </div>
                                 </div>
                                 <div class="tab-content col-md-10">
@@ -315,6 +316,21 @@
 
                                             </fieldset>
 
+                                        </form>
+                                    </div>
+                                    <div class="tab-pane fade" id="form-lockdown" role="tabpanel" aria-labelledby="pill-lockdown">
+                                        <form class="was-validated policy-form" data-policy="lockdown" novalidate>
+                                            <fieldset class="border">
+                                                <legend class="w-auto">Lockdown</legend>
+                                                <label> Percentage of connections cut
+                                                    <input type="number" min="0" max="100" step="any" value="90"
+                                                        title="Percentage of connections in the World graph that are disabled"
+                                                        imdata-units="percent" name="connections_cut_fraction" required>
+                                                    <div class="invalid-feedback">
+                                                        Please enter a number between 0 and 100.
+                                                    </div>
+                                                </label>
+                                            </fieldset>
                                         </form>
                                     </div>
                                 </div>
