@@ -266,7 +266,7 @@ export const r_spec = {
     $schema: "https://vega.github.io/schema/vega-lite/v4.json",
     width: "container",
     title: "Reproduction number",
-    height: 100,
+    height: 300,
     data: {name: "mydata"},
     transform: [
         {
@@ -320,7 +320,7 @@ export const serial_spec = {
     $schema: "https://vega.github.io/schema/vega-lite/v4.json",
     width: "container",
     title: "Serial interval",
-    height: 100,
+    height: 300,
     data: {name: "mydata"},
     transform: [
         {
