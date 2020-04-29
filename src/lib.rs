@@ -9,6 +9,7 @@ use rand::distributions::Distribution;
 use rand::Rng;
 use rand_distr::Binomial;
 use serde::{Deserialize, Serialize};
+use rustc_hash::FxHashSet;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -171,8 +172,8 @@ impl State {
 }
 
 struct Graph {
-    left_nodes: Vec<Vec<usize>>,
-    right_nodes: Vec<Vec<usize>>,
+    left_nodes: Vec<FxHashSet<usize>>,
+    right_nodes: Vec<FxHashSet<usize>>,
 }
 
 impl Graph {
@@ -185,17 +186,27 @@ impl Graph {
         }
     }
     fn register_node(&mut self) -> usize {
-        self.left_nodes.push(vec![]);
-        self.right_nodes.push(vec![]);
+        self.left_nodes.push(Default::default());
+        self.right_nodes.push(Default::default());
         return self.left_nodes.len() - 1;
     }
     fn add_link(&mut self, i: usize, j: usize) -> Option<()> {
         if j < i {
-            self.left_nodes.get_mut(i)?.push(j);
-            self.right_nodes.get_mut(j)?.push(i);
+            self.left_nodes.get_mut(i)?.insert(j);
+            self.right_nodes.get_mut(j)?.insert(i);
         } else {
-            self.left_nodes.get_mut(j)?.push(i);
-            self.right_nodes.get_mut(i)?.push(j);
+            self.left_nodes.get_mut(j)?.insert(i);
+            self.right_nodes.get_mut(i)?.insert(j);
+        }
+        Some(())
+    }
+    fn remove_link(&mut self, i: usize, j:usize) -> Option<()>{
+        if j < i {
+            self.left_nodes.get_mut(i)?.remove(&j);
+            self.right_nodes.get_mut(j)?.remove(&i);
+        } else {
+            self.left_nodes.get_mut(j)?.remove(&i);
+            self.right_nodes.get_mut(i)?.remove(&j);
         }
         Some(())
     }

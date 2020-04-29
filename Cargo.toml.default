@@ -17,6 +17,7 @@ default = ["console_error_panic_hook"]
 rand_distr = "0.2.2"
 serde = {version = "^1.0.59", features = ["derive"]}
 serde_derive = "^1.0.59"
+rustc-hash = "1.0"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
