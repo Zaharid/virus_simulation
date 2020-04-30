@@ -30,7 +30,7 @@ export function fillForm(form, data){
         let ele = form.querySelector(`[name=${key}]`);
         if(ele.getAttribute("data-units")==="percent"){
             if(ele.getAttribute("data-type")==="list"){
-                value = value.map((x) => {return Number((x*100).toPrecision(5))});
+                value = value.map((x) => {return Number((x*100).toPrecision(5))}).join(", ");
             }else{
                 value= Number((value*100).toPrecision(5));
             }
