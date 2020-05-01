@@ -1,5 +1,9 @@
 mod utils;
 
+use std::collections::hash_set;
+use std::collections::VecDeque;
+use std::iter;
+
 use wasm_bindgen::prelude::*;
 use web_sys;
 
@@ -8,8 +12,8 @@ use rand::distributions::weighted::alias_method::WeightedIndex;
 use rand::distributions::Distribution;
 use rand::Rng;
 use rand_distr::Binomial;
-use serde::{Deserialize, Serialize};
 use rustc_hash::FxHashSet;
+use serde::{Deserialize, Serialize};
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -278,6 +282,224 @@ impl Averager {
     }
 }
 
+#[derive(Default)]
+struct ChainSet {
+    data: VecDeque<FxHashSet<usize>>,
+}
+
+struct PartialDrainChainset<'a> {
+    chainset: &'a mut ChainSet,
+    drain: Option<Vec<usize>>,
+    n: usize,
+}
+
+impl Iterator for PartialDrainChainset<'_> {
+    type Item = usize;
+    fn next(&mut self) -> Option<usize> {
+        if let Some(drain) = self.drain.as_mut() {
+            if let Some(val) = drain.pop() {
+                self.n -= 1;
+                return Some(val);
+            }
+        }
+        while self.chainset.data.front()?.is_empty() {
+            self.chainset.pop_child();
+        }
+        let set = self.chainset.data.front_mut()?;
+        if self.n <= set.len() {
+            self.drain = Some(set.drain().collect());
+            self.chainset.pop_child();
+            return self.next();
+        } else {
+            return self.chainset.pop_clean();
+        }
+    }
+}
+
+impl ChainSet {
+    fn add_child(&mut self) {
+        self.data.push_back(Default::default());
+    }
+
+    fn push_child(&mut self, s: FxHashSet<usize>) {
+        self.data.push_back(s);
+    }
+
+    fn insert(&mut self, value: usize) -> bool {
+        for set in self.data.iter() {
+            if set.contains(&value) {
+                return true;
+            }
+        }
+        if self.data.is_empty() {
+            self.add_child();
+        }
+        return self.data.back_mut().unwrap().insert(value);
+    }
+
+    fn contains(&self, value: usize) -> bool {
+        for set in self.data.iter() {
+            if set.contains(&value) {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn remove(&mut self, value: usize) -> bool {
+        for set in self.data.iter_mut() {
+            if set.remove(&value) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    fn pop(&mut self) -> Option<usize> {
+        for set in self.data.iter_mut() {
+            if !set.is_empty() {
+                let ele = set.iter().next().unwrap().clone();
+                set.remove(&ele);
+                return Some(ele);
+            }
+        }
+        None
+    }
+
+    fn pop_clean(&mut self) -> Option<usize> {
+        let res = self.pop();
+        while self.data.front().is_some() && self.data.front().unwrap().is_empty() {
+            self.data.pop_front();
+        }
+        res
+    }
+
+    fn pop_child(&mut self) {
+        self.data.pop_front();
+    }
+
+    fn len(&self) -> usize {
+        self.data.iter().map(|x| x.len()).sum()
+    }
+
+    fn is_empty(&self) -> bool {
+        for set in self.data.iter() {
+            if !set.is_empty() {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+struct TestQueue {
+    maxsize: usize,
+    family_queue: ChainSet,
+    workplace_queue: ChainSet,
+    world_queue: ChainSet,
+    recently_tested: ChainSet,
+}
+
+impl TestQueue {
+    fn new(maxsize: usize) -> Self {
+        let family_queue = Default::default();
+        let workplace_queue = Default::default();
+        let world_queue = Default::default();
+        let recently_tested = Default::default();
+        //log!("Initially it has {} children", recently_tested.data.len());
+        Self {
+            maxsize,
+            family_queue,
+            workplace_queue,
+            world_queue,
+            recently_tested,
+        }
+    }
+
+    fn family_full(&self) -> bool {
+        self.family_queue.len() >= self.maxsize
+    }
+
+    fn workplace_full(&self) -> bool {
+        self.workplace_queue.len() >= self.maxsize - self.family_queue.len()
+    }
+
+    fn world_full(&self) -> bool {
+        self.world_queue.len()
+            >= self.maxsize - self.family_queue.len() - self.workplace_queue.len()
+    }
+
+    fn len(&self) -> usize {
+        self.family_queue.len() + self.workplace_queue.len() + self.world_queue.len()
+    }
+
+    fn insert_family(&mut self, value: usize) -> bool {
+        if self.family_full() {
+            return false;
+        }
+        if self.recently_tested.contains(value) {
+            return false;
+        }
+        let b = self.workplace_queue.remove(value) | self.world_queue.remove(value);
+        if !b && self.len() > self.maxsize - 1 {
+            if !self.world_queue.is_empty() {
+                self.world_queue.pop_clean();
+            } else {
+                self.workplace_queue.pop_clean().unwrap();
+            }
+        }
+        self.family_queue.insert(value)
+    }
+
+    fn insert_workplace(&mut self, value: usize) -> bool {
+        if self.workplace_full() {
+            return false;
+        }
+        if self.family_queue.contains(value) {
+            return false;
+        }
+        if self.recently_tested.contains(value) {
+            return false;
+        }
+        let b = self.world_queue.remove(value);
+        if !b && self.len() > self.maxsize - 1 {
+            self.world_queue.pop_clean().unwrap();
+        }
+        self.workplace_queue.insert(value)
+    }
+
+    fn insert_world(&mut self, value: usize) -> bool {
+        if self.world_full() {
+            return false;
+        }
+        if self.family_queue.contains(value) || self.workplace_queue.contains(value) {
+            return false;
+        }
+        if self.recently_tested.contains(value) {
+            return false;
+        }
+        self.world_queue.insert(value)
+    }
+
+    fn tick(&mut self, time: usize) {
+        if time > 1 {
+            self.recently_tested.pop_child();
+        }
+        for g in [
+            &mut self.family_queue,
+            &mut self.workplace_queue,
+            &mut self.world_queue,
+        ]
+        .iter_mut()
+        {
+            while g.data.front().map_or(false, |v| v.is_empty()) {
+                g.pop_child();
+            }
+            g.add_child();
+        }
+    }
+}
+
 #[wasm_bindgen]
 pub struct Simulation {
     family_graph: Graph,
@@ -291,6 +513,8 @@ pub struct Simulation {
     serial_interval_average: Averager,
     last_disabled_workplace: usize,
     config: Config,
+    max_daily_tests: usize,
+    test_queue: TestQueue,
     time: usize,
 }
 
@@ -373,6 +597,8 @@ impl Simulation {
         let serial_interval_average = Averager::new();
         let time = 0;
         let last_disabled_workplace = 0;
+        let max_daily_tests = 3000;
+        let test_queue = TestQueue::new(6000);
         Simulation {
             time,
             family_graph,
@@ -384,6 +610,8 @@ impl Simulation {
             r_average,
             serial_interval_average,
             states,
+            test_queue,
+            max_daily_tests,
             last_disabled_workplace,
             config,
         }
@@ -403,6 +631,7 @@ impl Simulation {
         self.counter.reset_day_counter();
         self.r_average.reset();
         self.serial_interval_average.reset();
+        self.test_queue.tick(self.time);
         let mut newstates: Vec<State> = Vec::with_capacity(self.states.len());
 
         //Don't iterate over state here so we can mutably borrow `self` later
@@ -419,6 +648,7 @@ impl Simulation {
             };
             newstates.push(newstate);
         }
+        self.trace_contacts(&mut newstates);
         self.states = newstates;
         self.time += 1;
     }
@@ -445,10 +675,6 @@ impl Simulation {
 
     pub fn disable_fraction_of_workplaces(&mut self, fraction: f64) {
         self.last_disabled_workplace = (fraction * self.config.nworkplaces() as f64) as usize;
-        log!(
-            "Last disabled workpalce is {}",
-            self.last_disabled_workplace
-        );
     }
 
     pub fn multiply_world_infectability(&mut self, coef: f64) {
@@ -567,6 +793,109 @@ impl Simulation {
         }
     }
 
+    fn trace_contacts_impl(
+        &mut self,
+        newstates: &mut [State],
+    ) -> (FxHashSet<usize>, FxHashSet<usize>) {
+        let mut res: FxHashSet<usize> = Default::default();
+        let mut recently_tested: FxHashSet<usize> = Default::default();
+        log!(
+            "Recently tested len {}",
+            self.test_queue.recently_tested.len()
+        );
+        log!("Length of wait queue is {}", self.test_queue.len());
+        let mut n = self.max_daily_tests;
+        if n <= 0 {
+            return (res, recently_tested);
+        }
+        let mut queues = [
+            &mut self.test_queue.family_queue,
+            &mut self.test_queue.workplace_queue,
+            &mut self.test_queue.world_queue,
+        ];
+
+        for q in queues.iter_mut() {
+            log!("Length of contact queue is {}", q.data.len());
+            for set in q.data.iter_mut() {
+                if set.len() >= n {
+                    for node in set.drain() {
+                        let s = newstates.get_mut(node).unwrap();
+                        if let State::Infected(t) = s {
+                            let news = State::Detected(*t);
+                            self.counter.transit(*s, news);
+                            *s = news;
+                            n -= 1;
+                            res.insert(node);
+                        } else if let State::Susceptible | State::Immune(_) = s {
+                            recently_tested.insert(node);
+                            n -= 1;
+                        }
+                        if n == 0 {
+                            log!("Done max daily tests");
+                            return (res, recently_tested);
+                        }
+                    }
+                } else {
+                    while let Some(node) = set.iter().next() {
+                        let node = *node;
+                        set.remove(&node);
+                        let s = newstates.get_mut(node).unwrap();
+                        if let State::Infected(t) = s {
+                            let news = State::Detected(*t);
+                            self.counter.transit(*s, news);
+                            *s = news;
+                            n -= 1;
+                            res.insert(node);
+                        } else if let State::Susceptible | State::Immune(_) = s {
+                            recently_tested.insert(node);
+                            n -= 1;
+                        }
+                        if n == 0 {
+                            log!("Done max daily tests");
+                            return (res, recently_tested);
+                        }
+                    }
+                }
+            }
+        }
+        log!("Done {} daily tests", self.max_daily_tests - n);
+        return (res, recently_tested);
+    }
+
+    fn trace_contacts(&mut self, newstates: &mut [State]) {
+        let (res, recently_tested) = self.trace_contacts_impl(newstates);
+        self.test_queue.recently_tested.push_child(recently_tested);
+        log!("Day: {}; Traced positive: {}", self.time, res.len());
+        log!(
+            "Recently tested has {} children",
+            self.test_queue.recently_tested.data.len()
+        );
+        for i in res.iter() {
+            self.queue_contact_tracing(*i);
+        }
+    }
+
+    fn queue_contact_tracing(&mut self, i: usize) {
+        for n in self.family_graph.iternodes(i) {
+            if self.test_queue.family_full() {
+                return;
+            }
+            self.test_queue.insert_family(*n);
+        }
+        for n in self.workplace_graph.iternodes(i) {
+            if self.test_queue.workplace_full() {
+                return;
+            }
+            self.test_queue.insert_workplace(*n);
+        }
+        for n in self.world_graph.iternodes(i) {
+            if self.test_queue.world_full() {
+                return;
+            }
+            self.test_queue.insert_world(*n);
+        }
+    }
+
     fn transit_infected(&mut self, t: usize, i: usize) -> State {
         let severe_state = if self.hospitals_full() {
             State::Unattended
@@ -587,6 +916,9 @@ impl Simulation {
         let s = Simulation::sample_state(&opts, &w);
         self.handle_r0(i, s);
         self.counter.transit(State::Infected(0), s);
+        if let State::Detected(_) = s {
+            self.queue_contact_tracing(i)
+        }
         s
     }
 
