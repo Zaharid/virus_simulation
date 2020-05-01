@@ -200,7 +200,7 @@ impl Graph {
         }
         Some(())
     }
-    fn remove_link(&mut self, i: usize, j:usize) -> Option<()>{
+    fn remove_link(&mut self, i: usize, j: usize) -> Option<()> {
         if j < i {
             self.left_nodes.get_mut(i)?.remove(&j);
             self.right_nodes.get_mut(j)?.remove(&i);
@@ -209,6 +209,10 @@ impl Graph {
             self.right_nodes.get_mut(i)?.remove(&j);
         }
         Some(())
+    }
+
+    fn iternodes(&self, n: usize) -> iter::Chain<hash_set::Iter<usize>, hash_set::Iter<usize>> {
+        return self.left_nodes[n].iter().chain(self.right_nodes[n].iter());
     }
 }
 
@@ -455,18 +459,18 @@ impl Simulation {
         self.config.workplace_contact_undetected_coef *= coef;
     }
 
-    pub fn disable_fraction_of_world_connections(&mut self, frac: f64){
+    pub fn disable_fraction_of_world_connections(&mut self, frac: f64) {
         let mut rng = rand::thread_rng();
         //Find a better algorithm
         let mut to_remove: FxHashSet<usize> = Default::default();
-        for i in 0..self.world_graph.left_nodes.len(){
-            for j in self.world_graph.left_nodes[i].iter(){
-                if frac > rng.gen(){
+        for i in 0..self.world_graph.left_nodes.len() {
+            for j in self.world_graph.left_nodes[i].iter() {
+                if frac > rng.gen() {
                     to_remove.insert(*j);
                 }
             }
-            for j in to_remove.iter(){
-                self.world_graph.remove_link(i,*j);
+            for j in to_remove.iter() {
+                self.world_graph.remove_link(i, *j);
             }
             to_remove.clear();
         }
@@ -498,8 +502,7 @@ impl Simulation {
         ];
         for opt in iterdata.iter() {
             if let Some((g, infected_coef, detected_coef)) = opt {
-                let nodes = g.left_nodes[i].iter().chain(g.right_nodes[i].iter());
-                for n in nodes {
+                for n in g.iternodes(i) {
                     let connected_state = self.states[*n];
                     if let State::Infected(t) | State::Detected(t) = connected_state {
                         let coef = if let State::Infected(_) = connected_state {
