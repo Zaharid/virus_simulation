@@ -26,7 +26,7 @@ const DEFAULT_FAMILY_SIZES: [usize; 5] = [1, 2, 3, 4, 5];
 const FAMILY_SIZE_WEIGHTS: [f64; 5] = [25.5, 30.4, 20.8, 17.5, 5.7];
 
 const SUSCEPTIBLE_INFECTED_PROFILE: [f64; 18] = [
-    0., 0.007, 0.015, 0.035, 0.035, 0.035, 0.05, 0.05, 0.05, 0.035, 0.035, 0.035, 0.035, 0.015,
+                           0., 0.007, 0.015, 0.035, 0.035, 0.035, 0.05, 0.05, 0.05, 0.035, 0.035, 0.035, 0.035, 0.015,
     0.0075, 0.0035, 0.0025, 0.00075,
 ];
 
@@ -703,8 +703,8 @@ impl Simulation {
         }
     }
 
-    pub fn set_max_contact_tracing(&mut self, max: usize){
-        self.test_queue.maxsize = max*3;
+    pub fn set_max_contact_tracing(&mut self, max: usize) {
+        self.test_queue.maxsize = max * 3;
         self.max_daily_tests = max;
     }
 }
@@ -868,23 +868,33 @@ impl Simulation {
     }
 
     fn queue_contact_tracing(&mut self, i: usize) {
+        let do_queue = |s: State| match s{
+            State::Susceptible | State::Infected(_) | State::Immune(_) => true,
+            State::Severe(_) | State::Detected(_) | State::Unattended | State::Dead => false,
+        };
         for n in self.family_graph.iternodes(i) {
             if self.test_queue.family_full() {
                 return;
             }
-            self.test_queue.insert_family(*n);
+            if do_queue(self.states[*n]){
+                self.test_queue.insert_family(*n);
+            }
         }
         for n in self.workplace_graph.iternodes(i) {
             if self.test_queue.workplace_full() {
                 return;
             }
-            self.test_queue.insert_workplace(*n);
+            if do_queue(self.states[*n]){
+                self.test_queue.insert_workplace(*n);
+            }
         }
-        for n in self.world_graph.iternodes(i) {
+        for n in self.world_graph.iternodes(i)   {
             if self.test_queue.world_full() {
                 return;
             }
-            self.test_queue.insert_world(*n);
+            if do_queue(self.states[*n]){
+                self.test_queue.insert_world(*n);
+            }
         }
     }
 
