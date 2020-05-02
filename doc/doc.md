@@ -263,14 +263,42 @@ transition trough them is eliminated.
 
 #### Social distancing
 
-Agents become more generally aware of the disease and infection rates both at
-the workplace and in random contacts decrease by an amount set by the user.
+The propagation of the disease is reduced for Workplace and World interactions
+by an amount set by the user. This affects only the propagation by Undetected
+agents, but not by Detected ones.
+
+#### Enhanced self isolation
+
+The propagation of the disease is reduced in interactions with Detected agents,
+by an amount set by the user.
 
 #### Lockdown
 
 Social contacts are reduced, resulting in a fraction of the World connections
 being disabled.
 
+#### Contact tracing
+
+Reveal Infected agents among the contacts of each new Detected agent and in turn
+transform them into Detected. The maximum number of daily tests is limited and
+can be set by the user.
+
+The tracing works by maintaining a queue of agents to be tested. Each appearance
+of a Detected agents causes their contacts to be added to the queue. Household
+contacts are given priority with respect to Workplace contacts, and both are
+given priority with respect to World contacts. Only Susceptible, Immune and
+Infected (Undetected) agents are added to the queue.
+
+On each day, contacts are pulled from the queue in order of priority, until the
+queue is empty or the daily test limit is reached. Infected (Undetected) contacts that are
+selected will become Infected (Detected). Their contacts are subsequently added
+to the queue, but not tested until the next day. Susceptible agents that get
+tested will not be tested again for three days.
+
+The contacts that are not selected remain in the queue with the same priority.
+The size of the queue is limited to three times the maximum size. Higher
+priority contacts will evict lower priority ones when the maximum size is
+reached.
 
 ### Technical details
 
