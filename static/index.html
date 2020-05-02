@@ -25,6 +25,10 @@
 
         }
 
+        .smallinp{
+            width: 7rem;
+        }
+
         footer p {
             margin-bottom: .25rem;
         }
@@ -288,6 +292,8 @@
                                             aria-controls="form-lockdown" aria-selected="false">Lockdown</a>
                                         <a class="nav-link" id="pill-contact-tracing" href="#form-contact-tracing" data-toggle="pill" role="tab"
                                             aria-controls="form-contact-tracing" aria-selected="false">Contact tracing</a>
+                                        <a class="nav-link" id="pill-enhanced-self-isolation" href="#form-enhanced-self-isolation" data-toggle="pill" role="tab"
+                                            aria-controls="form-enhanced-self-isolation" aria-selected="false">Enhanced self isolation</a>
                                     </div>
                                 </div>
                                 <div class="tab-content col-md-10">
@@ -312,14 +318,14 @@
                                             <fieldset class="border">
                                                 <legend class="w-auto">Social distancing</legend>
                                                 <label>General Infectability reduction percentage
-                                                    <input type="number" min="0" max="100" step="any" title="Percentage reduction in infectability on random iterations"
+                                                    <input type="number" class="smallinp" min="0" max="100" step="any" title="Percentage reduction in infectability on random iterations"
                                                         value="70" data-units="percent" name="world-reduction" required>
                                                     <div class="invalid-feedback">
                                                         Please enter a number between 0 and 100.
                                                     </div>
                                                 </label>
                                                 <label>Workplace infectability reduction percentage
-                                                    <input type="number" min="0" max="100" step="any" title="Percentage reduction in infectability with coworkers"
+                                                    <input type="number" min="0" max="100" step="any" class="smallinp" title="Percentage reduction in infectability with coworkers"
                                                         value="30" data-units="percent" name="workplace-reduction" required>
                                                     <div class="invalid-feedback">
                                                         Please enter a number between 0 and 100.
@@ -357,6 +363,48 @@
                                                         Please enter a valid number.
                                                     </div>
                                                 </label>
+                                            </fieldset>
+                                        </form>
+                                    </div>
+                                    <div class="tab-pane fade" id="form-enhanced-self-isolation" role="tabpanel" aria-labelledby="pill-enhanced-self-isolation">
+                                        <form class="was-validated policy-form" data-policy="enhanced-self-isolation" novalidate>
+                                            <fieldset class="border">
+                                                <div class="container-fluid">
+                                                    <legend class="w-auto">Enhanced self isolation</legend>
+                                                    <div class="row">
+                                                        <div class="col-lg-4">
+                                                            <label>Household Infectability reduction percentage
+                                                                <input type="number" class="smallinp" min="0" max="100" step="any" title="Percentage reduction in infectability at home"
+                                                                    value="70" data-units="percent" name="household-reduction" required>
+                                                                <div class="invalid-feedback">
+                                                                    Please enter a number between 0 and 100.
+                                                                </div>
+                                                            </label>
+
+                                                        </div>
+
+                                                        <div class="col-lg-4">
+                                                            <label>Workplace infectability reduction percentage
+                                                                <input type="number" class="smallinp" min="0" max="100" step="any" title="Percentage reduction in infectability with coworkers"
+                                                                    value="99" data-units="percent" name="workplace-reduction" required>
+                                                                <div class="invalid-feedback">
+                                                                    Please enter a number between 0 and 100.
+                                                                </div>
+                                                            </label>
+                                                        </div>
+
+                                                        <div class="col-lg-4">
+                                                            <label>General Infectability reduction percentage
+                                                                <input type="number" class="smallinp" min="0" max="100" step="any" title="Percentage reduction in infectability on random iterations"
+                                                                    value="99" data-units="percent" name="world-reduction" required>
+                                                                <div class="invalid-feedback">
+                                                                    Please enter a number between 0 and 100.
+                                                                </div>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                             </fieldset>
                                         </form>
                                     </div>

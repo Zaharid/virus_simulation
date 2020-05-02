@@ -26,7 +26,7 @@ const DEFAULT_FAMILY_SIZES: [usize; 5] = [1, 2, 3, 4, 5];
 const FAMILY_SIZE_WEIGHTS: [f64; 5] = [25.5, 30.4, 20.8, 17.5, 5.7];
 
 const SUSCEPTIBLE_INFECTED_PROFILE: [f64; 18] = [
-                           0., 0.007, 0.015, 0.035, 0.035, 0.035, 0.05, 0.05, 0.05, 0.035, 0.035, 0.035, 0.035, 0.015,
+    0., 0.007, 0.015, 0.035, 0.035, 0.035, 0.05, 0.05, 0.05, 0.035, 0.035, 0.035, 0.035, 0.015,
     0.0075, 0.0035, 0.0025, 0.00075,
 ];
 
@@ -676,12 +676,24 @@ impl Simulation {
         self.last_disabled_workplace = (fraction * self.config.nworkplaces() as f64) as usize;
     }
 
-    pub fn multiply_world_infectability(&mut self, coef: f64) {
+    pub fn multiply_undetected_world_infectability(&mut self, coef: f64) {
         self.config.world_contact_undetected_coef *= coef;
     }
 
-    pub fn multiply_workplace_infectability(&mut self, coef: f64) {
+    pub fn multiply_undetected_workplace_infectability(&mut self, coef: f64) {
         self.config.workplace_contact_undetected_coef *= coef;
+    }
+
+    pub fn multiply_detected_household_infectability(&mut self, coef: f64) {
+        self.config.family_contact_detected_coef *= coef;
+    }
+
+    pub fn multiply_detected_workplace_infectability(&mut self, coef: f64) {
+        self.config.workplace_contact_detected_coef *= coef;
+    }
+
+    pub fn multiply_detected_world_infectability(&mut self, coef: f64) {
+        self.config.world_contact_detected_coef *= coef;
     }
 
     pub fn disable_fraction_of_world_connections(&mut self, frac: f64) {
@@ -717,7 +729,7 @@ impl Simulation {
                 self.config.family_contact_undetected_coef,
                 self.config.family_contact_detected_coef,
             )),
-            if self.worker_workplaces[i] < self.last_disabled_workplace {
+            if self.workplace_enabled(i) {
                 None
             } else {
                 Some((
@@ -756,6 +768,10 @@ impl Simulation {
             }
         }
         State::Susceptible
+    }
+
+    fn workplace_enabled(&self, i: usize) -> bool {
+        self.worker_workplaces[i] < self.last_disabled_workplace
     }
 
     fn hospitals_full(&self) -> bool {
@@ -868,7 +884,7 @@ impl Simulation {
     }
 
     fn queue_contact_tracing(&mut self, i: usize) {
-        let do_queue = |s: State| match s{
+        let do_queue = |s: State| match s {
             State::Susceptible | State::Infected(_) | State::Immune(_) => true,
             State::Severe(_) | State::Detected(_) | State::Unattended | State::Dead => false,
         };
@@ -876,23 +892,25 @@ impl Simulation {
             if self.test_queue.family_full() {
                 return;
             }
-            if do_queue(self.states[*n]){
+            if do_queue(self.states[*n]) {
                 self.test_queue.insert_family(*n);
             }
         }
-        for n in self.workplace_graph.iternodes(i) {
-            if self.test_queue.workplace_full() {
-                return;
-            }
-            if do_queue(self.states[*n]){
-                self.test_queue.insert_workplace(*n);
+        if self.workplace_enabled(i) {
+            for n in self.workplace_graph.iternodes(i) {
+                if self.test_queue.workplace_full() {
+                    return;
+                }
+                if do_queue(self.states[*n]) {
+                    self.test_queue.insert_workplace(*n);
+                }
             }
         }
-        for n in self.world_graph.iternodes(i)   {
+        for n in self.world_graph.iternodes(i) {
             if self.test_queue.world_full() {
                 return;
             }
-            if do_queue(self.states[*n]){
+            if do_queue(self.states[*n]) {
                 self.test_queue.insert_world(*n);
             }
         }

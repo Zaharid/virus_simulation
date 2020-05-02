@@ -90,8 +90,8 @@ function runPolicy(policy, data){
 			simulation.disable_fraction_of_workplaces(data.workplaces);
 			break
 		case "social-distancing":
-			simulation.multiply_workplace_infectability(1 - data["workplace-reduction"]);
-			simulation.multiply_world_infectability(1 - data["world-reduction"]);
+			simulation.multiply_undetected_workplace_infectability(1 - data["workplace-reduction"]);
+			simulation.multiply_undetected_world_infectability(1 - data["world-reduction"]);
 			break
         case "lockdown":
             simulation.disable_fraction_of_world_connections(data["connections_cut_fraction"])
@@ -99,7 +99,12 @@ function runPolicy(policy, data){
         case "contact-tracing":
             simulation.set_max_contact_tracing(data["max_daily_tests"]);
             break;
-	}
+        case "enhanced-self-isolation":
+            simulation.multiply_detected_household_infectability(1 - data["household-reduction"]);
+            simulation.multiply_detected_workplace_infectability(1 - data["workplace-reduction"]);
+            simulation.multiply_detected_world_infectability(1 - data["world-reduction"]);
+            break;
+     }
 
 }
 
