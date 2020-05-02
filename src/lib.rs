@@ -406,7 +406,6 @@ impl TestQueue {
         let workplace_queue = Default::default();
         let world_queue = Default::default();
         let recently_tested = Default::default();
-        //log!("Initially it has {} children", recently_tested.data.len());
         Self {
             maxsize,
             family_queue,
@@ -806,11 +805,6 @@ impl Simulation {
     ) -> (FxHashSet<usize>, FxHashSet<usize>) {
         let mut res: FxHashSet<usize> = Default::default();
         let mut recently_tested: FxHashSet<usize> = Default::default();
-        log!(
-            "Recently tested len {}",
-            self.test_queue.recently_tested.len()
-        );
-        log!("Length of wait queue is {}", self.test_queue.len());
         let mut n = self.max_daily_tests;
         if n <= 0 {
             return (res, recently_tested);
@@ -822,7 +816,6 @@ impl Simulation {
         ];
 
         for q in queues.iter_mut() {
-            log!("Length of contact queue is {}", q.data.len());
             for set in q.data.iter_mut() {
                 if set.len() >= n {
                     for node in set.drain() {
@@ -838,7 +831,6 @@ impl Simulation {
                             n -= 1;
                         }
                         if n == 0 {
-                            log!("Done max daily tests");
                             return (res, recently_tested);
                         }
                     }
@@ -858,25 +850,18 @@ impl Simulation {
                             n -= 1;
                         }
                         if n == 0 {
-                            log!("Done max daily tests");
                             return (res, recently_tested);
                         }
                     }
                 }
             }
         }
-        log!("Done {} daily tests", self.max_daily_tests - n);
         return (res, recently_tested);
     }
 
     fn trace_contacts(&mut self, newstates: &mut [State]) {
         let (res, recently_tested) = self.trace_contacts_impl(newstates);
         self.test_queue.recently_tested.push_child(recently_tested);
-        log!("Day: {}; Traced positive: {}", self.time, res.len());
-        log!(
-            "Recently tested has {} children",
-            self.test_queue.recently_tested.data.len()
-        );
         for i in res.iter() {
             self.queue_contact_tracing(*i);
         }
