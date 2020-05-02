@@ -96,6 +96,9 @@ function runPolicy(policy, data){
         case "lockdown":
             simulation.disable_fraction_of_world_connections(data["connections_cut_fraction"])
             break
+        case "contact-tracing":
+            simulation.set_max_contact_tracing(data["max_daily_tests"]);
+            break;
 	}
 
 }

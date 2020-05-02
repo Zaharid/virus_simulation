@@ -597,8 +597,8 @@ impl Simulation {
         let serial_interval_average = Averager::new();
         let time = 0;
         let last_disabled_workplace = 0;
-        let max_daily_tests = 3000;
-        let test_queue = TestQueue::new(6000);
+        let max_daily_tests = 0;
+        let test_queue = TestQueue::new(0);
         Simulation {
             time,
             family_graph,
@@ -687,8 +687,9 @@ impl Simulation {
 
     pub fn disable_fraction_of_world_connections(&mut self, frac: f64) {
         let mut rng = rand::thread_rng();
-        //Find a better algorithm
+        // Find a better algorithm
         let mut to_remove: FxHashSet<usize> = Default::default();
+        // This needs to be indexes because of the borrow checker
         for i in 0..self.world_graph.left_nodes.len() {
             for j in self.world_graph.left_nodes[i].iter() {
                 if frac > rng.gen() {
@@ -698,8 +699,14 @@ impl Simulation {
             for j in to_remove.iter() {
                 self.world_graph.remove_link(i, *j);
             }
+
             to_remove.clear();
         }
+    }
+
+    pub fn set_max_contact_tracing(&mut self, max: usize){
+        self.test_queue.maxsize = max*3;
+        self.max_daily_tests = max;
     }
 }
 
