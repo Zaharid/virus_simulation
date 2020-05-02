@@ -25,9 +25,9 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 const DEFAULT_FAMILY_SIZES: [usize; 5] = [1, 2, 3, 4, 5];
 const FAMILY_SIZE_WEIGHTS: [f64; 5] = [25.5, 30.4, 20.8, 17.5, 5.7];
 
-const SUSCEPTIBLE_INFECTED_PROFILE: [f64; 23] = [
-    0., 0.005, 0.007, 0.015, 0.015, 0.015, 0.015, 0.03, 0.07, 0.07, 0.07, 0.1, 0.1, 0.1, 0.07,
-    0.07, 0.07, 0.07, 0.03, 0.015, 0.007, 0.005, 0.0015,
+const SUSCEPTIBLE_INFECTED_PROFILE: [f64; 18] = [
+    0., 0.007, 0.015, 0.035, 0.035, 0.035, 0.05, 0.05, 0.05, 0.035, 0.035, 0.035, 0.035, 0.015,
+    0.0075, 0.0035, 0.0025, 0.00075,
 ];
 
 const INFECTED_DETECTED_PROFILE: [f64; 18] = [
