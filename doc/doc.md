@@ -57,7 +57,8 @@ the following states:
   - Infected (Detected)
   - Severe
   - Unattended
-  - Immune
+  - Immune (Undetected)
+  - Immune (Detected)
   - Dead
 
 The evolution proceeds in discrete time events, *days*. On each day, agents can
@@ -207,6 +208,10 @@ Undetected, but however it their behaviour changes (for example they largely
 stop going to work) leading to a smaller risk of infecting others. This is
 parametrized by the infectability strengths explained above.
 
+Immune agents are considered Detected if the agent's previous infection was
+detected or if hospitalization was required. Currently the distinction between
+Detected and Undetected agents is only relevant for [Contact tracing].
+
 #### Disease evolution
 
 Infected agents have a daily chance <a class="anchor-link"
@@ -230,8 +235,9 @@ unattended agents become Severe if there are hospital slots available or Dead
 otherwise.
 
 <div class="alert alert-secondary">
-Note: For simplicity Severe and Unattended agents are typically reported
-together in the user interface.
+Note: For simplicity Severe and Unattended agents are reported
+together in the user interface. Immune (Detected) and Immune (Undetected) agents
+are reported as immune.
 </div>
 
 #### Immunity loss
@@ -286,14 +292,15 @@ can be set by the user.
 The tracing works by maintaining a queue of agents to be tested. Each appearance
 of a Detected agents causes their contacts to be added to the queue. Household
 contacts are given priority with respect to Workplace contacts, and both are
-given priority with respect to World contacts. Only Susceptible, Immune and
-Infected (Undetected) agents are added to the queue.
+given priority with respect to World contacts. Only Susceptible, Immune
+(Undetected) and Infected (Undetected) agents are added to the queue.
 
 On each day, contacts are pulled from the queue in order of priority, until the
-queue is empty or the daily test limit is reached. Infected (Undetected) contacts that are
-selected will become Infected (Detected). Their contacts are subsequently added
-to the queue, but not tested until the next day. Susceptible agents that get
-tested will not be tested again for three days.
+queue is empty or the daily test limit is reached. Infected (Undetected)
+contacts that are selected will become Infected (Detected). Immune (Undetected)
+contacts become Immune (Detected). Their contacts are subsequently added to the
+queue, but not tested until the next day. Susceptible agents that get tested
+will not be tested again for three days.
 
 The contacts that are not selected remain in the queue with the same priority.
 The size of the queue is limited to three times the maximum size. Higher

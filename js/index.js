@@ -213,6 +213,14 @@ function push_daily(data){
 
 }
 
+function simplify_counter_data(data){
+	data["Severe"] += data["Unattended"];
+	delete data["Unattended"];
+    data["Immune"] = data["Immune (Undetected)"] + data["Immune (Detected)"]
+    delete data["Immune (Detected)"];
+    delete data["Immune (Undetected)"];
+}
+
 
 playPauseButton.textContent = "▶";
 
@@ -221,11 +229,9 @@ let stopped_once = false;
 function handleIncomingData(data){
 	//Merge severe and unattended for simplicity of reportying
 	let counter_output = data.abs_counter_output;
-	counter_output["Severe"] += counter_output["Unattended"];
-	delete counter_output["Unattended"];
+    simplify_counter_data(counter_output);
 	let day_output = data.day_counter_output;
-	day_output["Severe"] += day_output["Unattended"];
-	delete day_output["Unattended"];
+    simplify_counter_data(day_output);
 	let plot_values = push_counter(data);
 	display.innerHTML = JSON.stringify(counter_output, null, 4);
 	view.insert("mydata", plot_values).run();

@@ -7,7 +7,8 @@ const NAMES = [
     "Infected (Detected)",
     "Severe",
     "Unattended",
-    "Immune",
+    "Immune (Undetected)",
+    "Immune (Detected)",
     "Dead",
 ];
 

@@ -158,6 +158,7 @@ enum State {
     Severe(usize),
     Unattended,
     Immune(usize),
+    ImmuneDetected(usize),
     Dead,
 }
 
@@ -170,7 +171,8 @@ impl State {
             State::Severe(_) => 3,
             State::Unattended => 4,
             State::Immune(_) => 5,
-            State::Dead => 6,
+            State::ImmuneDetected(_) => 6,
+            State::Dead => 7,
         }
     }
 }
@@ -222,14 +224,14 @@ impl Graph {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Counter {
-    abs_counter: [i32; 7],
-    day_counter: [i32; 7],
+    abs_counter: [i32; 8],
+    day_counter: [i32; 8],
 }
 
 impl Counter {
     fn new() -> Counter {
-        let abs_counter = [0, 0, 0, 0, 0, 0, 0];
-        let day_counter = [0, 0, 0, 0, 0, 0, 0];
+        let abs_counter = [0, 0, 0, 0, 0, 0, 0, 0];
+        let day_counter = [0, 0, 0, 0, 0, 0, 0, 0];
         Counter {
             abs_counter,
             day_counter,
@@ -643,6 +645,7 @@ impl Simulation {
                 State::Unattended => self.transit_unattended(),
                 State::Severe(t) => self.transit_severe(t),
                 State::Immune(t) => self.transit_immune(t),
+                State::ImmuneDetected(t) => self.transit_immune_detected(t),
                 State::Dead => State::Dead,
             };
             newstates.push(newstate);
@@ -806,6 +809,7 @@ impl Simulation {
             | State::Susceptible
             | State::Severe(_)
             | State::Immune(_)
+            | State::ImmuneDetected(_)
             | State::Dead => {
                 let ninfected = self.infections_caused[i];
                 self.r_average.push(ninfected as i32);
@@ -861,6 +865,11 @@ impl Simulation {
                             *s = news;
                             n -= 1;
                             res.insert(node);
+                        } else if let State::Immune(t) = s{
+                            let news = State::ImmuneDetected(*t);
+                            self.counter.transit(*s, news);
+                            *s = news;
+                            n -= 1;
                         } else if let State::Susceptible | State::Immune(_) = s {
                             recently_tested.insert(node);
                             n -= 1;
@@ -886,7 +895,11 @@ impl Simulation {
     fn queue_contact_tracing(&mut self, i: usize) {
         let do_queue = |s: State| match s {
             State::Susceptible | State::Infected(_) | State::Immune(_) => true,
-            State::Severe(_) | State::Detected(_) | State::Unattended | State::Dead => false,
+            State::Severe(_)
+            | State::Detected(_)
+            | State::Unattended
+            | State::Dead
+            | State::ImmuneDetected(_) => false,
         };
         for n in self.family_graph.iternodes(i) {
             if self.test_queue.family_full() {
@@ -948,7 +961,11 @@ impl Simulation {
         } else {
             State::Severe(0)
         };
-        let opts = [State::Immune(0), severe_state, State::Detected(t + 1)];
+        let opts = [
+            State::ImmuneDetected(0),
+            severe_state,
+            State::Detected(t + 1),
+        ];
         let w = [
             sat_index(&self.config.infected_immune_profile, t),
             sat_index(&self.config.infected_severe_profile, t),
@@ -970,7 +987,7 @@ impl Simulation {
     }
 
     fn transit_severe(&mut self, t: usize) -> State {
-        let opts = [State::Immune(0), State::Dead, State::Severe(t + 1)];
+        let opts = [State::ImmuneDetected(0), State::Dead, State::Severe(t + 1)];
         let w = [
             sat_index(&self.config.severe_immune_profile, t),
             sat_index(&self.config.severe_dead_profile, t),

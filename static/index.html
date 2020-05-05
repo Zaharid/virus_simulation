@@ -160,7 +160,8 @@
                             <li>Infected (Detected)</li>
                             <li>Severe</li>
                             <li>Unattended</li>
-                            <li>Immune</li>
+                            <li>Immune (Undetected)</li>
+                            <li>Immune (Detected)</li>
                             <li>Dead</li>
                         </ul>
                         <p>The evolution proceeds in discrete time events, <em>days</em>. On each day, agents can transition between stated according to</p>
@@ -214,6 +215,7 @@
                         <h4 id="detection">Detection</h4>
                         <p>Each Infected (Undetected) agent has a <a class="anchor-link"
                                 href="#infected_detected_profile">daily probability</a> of becoming Detected spontaneously. This probability varies as a function of the number of says since infection and is settable by the user. This models people assuming they have contracted the disease, for example based on their symptoms. It is assumed that the disease evolution is not affected by whether the agent is Detected or Undetected, but however it their behaviour changes (for example they largely stop going to work) leading to a smaller risk of infecting others. This is parametrized by the infectability strengths explained above.</p>
+                        <p>Immune agents are considered Detected if the agent’s previous infection was detected or if hospitalization was required. Currently the distinction between Detected and Undetected agents is only relevant for <a href="#contact-tracing">Contact tracing</a>.</p>
                         <h4 id="disease-evolution">Disease evolution</h4>
                         <p>Infected agents have a daily chance <a class="anchor-link"
                                 href="#ingected_immune_profile">healing</a> (thus becoming Immune) or <a
@@ -223,7 +225,7 @@
                         <p>Hospital resource scarcity is modelled by the <a class="anchor-link"
                                 href="#hospital_capacity">total number of patients that can be hospitalized at once</a>. If an agent requires hospitalization and the number of Severe patients matches this threshold, then the agent becomes Unattended. The next day unattended agents become Severe if there are hospital slots available or Dead otherwise.</p>
                         <div class="alert alert-secondary">
-                            <p>Note: For simplicity Severe and Unattended agents are typically reported together in the user interface.</p>
+                            <p>Note: For simplicity Severe and Unattended agents are reported together in the user interface. Immune (Detected) and Immune (Undetected) agents are reported as immune.</p>
                         </div>
                         <h4 id="immunity-loss">Immunity loss</h4>
                         <p>The simulation allows for the possibility of immune agents losing their immunity and becoming immune again. This is parametrized by a <a class="anchor-link"
@@ -242,8 +244,8 @@
                         <p>Social contacts are reduced, resulting in a fraction of the World connections being disabled.</p>
                         <h4 id="contact-tracing">Contact tracing</h4>
                         <p>Reveal Infected agents among the contacts of each new Detected agent and in turn transform them into Detected. The maximum number of daily tests is limited and can be set by the user.</p>
-                        <p>The tracing works by maintaining a queue of agents to be tested. Each appearance of a Detected agents causes their contacts to be added to the queue. Household contacts are given priority with respect to Workplace contacts, and both are given priority with respect to World contacts. Only Susceptible, Immune and Infected (Undetected) agents are added to the queue.</p>
-                        <p>On each day, contacts are pulled from the queue in order of priority, until the queue is empty or the daily test limit is reached. Infected (Undetected) contacts that are selected will become Infected (Detected). Their contacts are subsequently added to the queue, but not tested until the next day. Susceptible agents that get tested will not be tested again for three days.</p>
+                        <p>The tracing works by maintaining a queue of agents to be tested. Each appearance of a Detected agents causes their contacts to be added to the queue. Household contacts are given priority with respect to Workplace contacts, and both are given priority with respect to World contacts. Only Susceptible, Immune (Undetected) and Infected (Undetected) agents are added to the queue.</p>
+                        <p>On each day, contacts are pulled from the queue in order of priority, until the queue is empty or the daily test limit is reached. Infected (Undetected) contacts that are selected will become Infected (Detected). Immune (Undetected) contacts become Immune (Detected). Their contacts are subsequently added to the queue, but not tested until the next day. Susceptible agents that get tested will not be tested again for three days.</p>
                         <p>The contacts that are not selected remain in the queue with the same priority. The size of the queue is limited to three times the maximum size. Higher priority contacts will evict lower priority ones when the maximum size is reached.</p>
                         <h3 id="technical-details">Technical details</h3>
                         <p>The code of the simulation can be found here:</p>

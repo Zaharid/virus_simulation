@@ -7,18 +7,21 @@ digraph States{
     "Unattended" [color="#e7298a"];
     "Severe" [color="#e7298a"];
     "Dead" [color="#666666", fontcolor=white];
-    "Immune" [color="#66a61e"];
+    "Immune (Detected)" [color="#66a61e"];
+    "Immune (Undetected)" [color="#66a61e"];
     "Susceptible" -> "Infected (Undetected)";
     "Infected (Undetected)" -> "Infected (Detected)";
     "Infected (Undetected)" -> "Severe";
     "Infected (Undetected)" -> "Unattended";
-    "Infected (Undetected)" -> "Immune";
+    "Infected (Undetected)" -> "Immune (Undetected)";
     "Infected (Detected)" -> "Severe";
     "Infected (Detected)" -> "Unattended";
-    "Infected (Detected)" -> "Immune";
-    "Severe" -> "Immune";
+    "Infected (Detected)" -> "Immune (Detected)";
+    "Severe" -> "Immune (Detected)";
     "Severe" -> "Dead";
     "Unattended" -> "Severe";
     "Unattended" -> "Dead";
-    "Immune" -> "Susceptible";
+    "Immune (Detected)" -> "Susceptible";
+    "Immune (Undetected)" -> "Susceptible";
+    "Immune (Undetected)" -> "Immune (Detected)"
 }
