@@ -2,11 +2,14 @@ export function parseForm(form){
     if(!form.checkValidity()){
         return null;
     }
-    let res = {}
+    let res = Object.create(null);
     let fd = new FormData(form);
-    for (let [key, value] of fd.entries()){
-        let ele = form.querySelector(`[name=${key}]`);
-        if (ele.getAttribute("data-type") === "list"){
+    for (let ele of form.querySelectorAll('[name]')){
+        let key = ele.getAttribute("name");
+        let value = fd.get(key);
+        if (ele.getAttribute("type") === "checkbox"){
+            value = ele.checked;
+        }else if (ele.getAttribute("data-type") === "list"){
             if(ele.getAttribute("data-units") === "percent"){
                 value = value.split(",").map((x) => {return Number(x)/100});
             }else{
@@ -21,6 +24,7 @@ export function parseForm(form){
         }
         res[key] = value;
     }
+
     return res;
 }
 
@@ -35,7 +39,11 @@ export function fillForm(form, data){
                 value= Number((value*100).toPrecision(5));
             }
         }
-        ele.value = value;
+        if (ele.getAttribute("type") === "checkbox"){
+            ele.checked = value;
+        }else{
+            ele.value = value;
+        }
         ele.setAttribute("data-original", value);
         let ev = new Event("input");
         ele.dispatchEvent(ev);
