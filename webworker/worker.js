@@ -28,6 +28,7 @@ function sleep(ms) {
 
 let simulation = null;
 let policies = null;
+let reverse_policies = null;
 
 let timeoutID = null;
 
@@ -41,6 +42,7 @@ async function init(args){
 	last_received_time = 0;
 	let config = args.config;
     policies = args.policies;
+    reverse_policies = [];
 	simulation = Simulation.from_js(config);
 	if (simulation===null){
 		throw new Error("Invalid simulation configuation");
@@ -82,7 +84,8 @@ function pause(){
 
 const ops = {
     ">=": (a,b) => (a >= b),
-    "<=": (a,b) => (a <= b)
+    "<=": (a,b) => (a <= b),
+    "==": (a,b) => (a === b),
 }
 
 function runPolicy(policy, data){
@@ -104,6 +107,33 @@ function runPolicy(policy, data){
             simulation.multiply_detected_household_infectability(1 - data["household-reduction"]);
             simulation.multiply_detected_workplace_infectability(1 - data["workplace-reduction"]);
             simulation.multiply_detected_world_infectability(1 - data["world-reduction"]);
+            break;
+     }
+
+}
+
+function reversePolicy(policy, data){
+	switch (policy){
+		case "shut-workplaces":
+            //TODO
+			//simulation.disable_fraction_of_workplaces(data.workplaces);
+			break
+		case "social-distancing":
+			simulation.undo_multiply_undetected_workplace_infectability(1 - data["workplace-reduction"]);
+			simulation.undo_multiply_undetected_world_infectability(1 - data["world-reduction"]);
+			break
+        case "lockdown":
+            //TODO
+            //simulation.disable_fraction_of_world_connections(data["connections_cut_fraction"])
+            break
+        case "contact-tracing":
+            //TODO
+            //simulation.set_max_contact_tracing(data["max_daily_tests"]);
+            break;
+        case "enhanced-self-isolation":
+            simulation.undo_multiply_detected_household_infectability(1 - data["household-reduction"]);
+            simulation.undo_multiply_detected_workplace_infectability(1 - data["workplace-reduction"]);
+            simulation.undo_multiply_detected_world_infectability(1 - data["world-reduction"]);
             break;
      }
 
@@ -137,21 +167,43 @@ function run(){
 
 
 	let newpolocies = [];
+    let cmpobj = {time: time, ...abs_counter_output};
 	for (let p of policies){
-		if (checkTrigger(abs_counter_output, p.trigger)){
+		if (checkTrigger(cmpobj, p.trigger)){
 			runPolicy(p.policy, p.data);
 			postMessage({
 				"type": "POLICY_APPLIED",
-				"args": {
-					"time": time,
-					"policy": p.policy
-				}
-			})
+				"args": {time: time, policy: p.policy, event: "applied",}
+			});
+            if (p.shutdown["trigger-variable"] !== "permanent"){
+                if (p.shutdown["trigger-variable"] === "duration"){
+                    p.shutdown["trigger-variable"] = "time";
+                    p.shutdown["trigger-value"] += time;
+                }
+                reverse_policies.push(p);
+            }
 		}else{
 			newpolocies.push(p);
 		}
 	}
 	policies = newpolocies;
+
+    let new_reverse_policies = [];
+    for (let p of reverse_policies){
+        if(checkTrigger(cmpobj, p.shutdown)){
+            reversePolicy(p.policy, p.data);
+            postMessage({
+                "type": "POLICY_REVERSED",
+                "args": {time: time, policy: p.policy, event: "reversed"}
+            });
+            if (p.shutdown.recurrent){
+                policies.push(p);
+            }
+        }else{
+            new_reverse_policies.push(p);
+        }
+    }
+    reverse_policies = new_reverse_policies;
 
 
 	if (time - last_received_time > 20){

@@ -10,29 +10,21 @@ const blueprint = policyContaniner.querySelector('.policy-selector');
 
 
 
-policyContaniner.addEventListener("sync", sync)
-
-
 function sync(){
     const nodes = policyContaniner.querySelectorAll('.policy-selector');
-    remove.disabled = (nodes.length === 0);
     let pforms = policyContaniner.querySelectorAll(".policy-selector .active .policy-form");
     let tforms = policyContaniner.querySelectorAll(".policy-selector .trigger-form");
+    let sforms = policyContaniner.querySelectorAll(".policy-selector .shutdown-form");
     const valid = (f) => {return f.checkValidity();};
     let disabled = (
         !(pforms.length === nodes.length) ||
         !Array.from(pforms).every(valid) ||
-        !Array.from(tforms).every(valid)
+        !Array.from(tforms).every(valid) ||
+        !Array.from(sforms).every(valid)
     );
     addAnother.disabled = disabled;
     done.disabled = disabled;
-    if(disabled){
-        feedback.style.display = "block";
-    }else{
-        feedback.style.display = "none";
-    }
-
-
+    feedback.style.display = disabled ? "block" : "none";
 }
 
 let n = 0;
@@ -132,9 +124,15 @@ export function getPolicies(){
         if(triggerData === null){
             return null;
         }
+        let sform = n.querySelector(".shutdown-form");
+
+        let shutdownData = parseForm(sform);
+        if(triggerData === null){
+            return null;
+        }
         let policy = pform.getAttribute("data-policy");
         policies.push(
-            {'policy': policy, 'trigger': triggerData, 'data': policyData}
+            {'policy': policy, 'trigger': triggerData, "shutdown": shutdownData,'data': policyData}
         );
 
     }
@@ -154,6 +152,8 @@ export function fillPolicyForm(policies){
         fillForm(triggerForm, policy.trigger);
         let pform = f.querySelector(".active .policy-form");;
         fillForm(pform, policy.data);
+        let sform = f.querySelector(".shutdown-form");
+        fillForm(sform, policy.shutdown);
         sync();
     }
 

@@ -94,7 +94,13 @@ const policy_mark_layer = [
                 type: "quantitative"
             },
             color: {
-                value: "#7570b3"
+                field: "event",
+                type: "nominal",
+                legend: null,
+                scale: {
+                    domain: ["applied", "reversed"],
+                    range: ["#386cb0", "#beaed4"],
+                }
             },
             strokeWidth: {
                 value: 2
@@ -102,6 +108,10 @@ const policy_mark_layer = [
             tooltip: [{
                     field: "policy",
                     type: "nominal"
+                },
+                {
+                    field: "event",
+                    type: "nominal",
                 },
                 {
                     field: "time",
@@ -123,6 +133,7 @@ export function population_spec(total_population) {
         "width": "container",
         "title": "Population distribution",
         "height": 250,
+        "resolve": {"scale": {"color": "independent"}},
         "layer": [{
                 "transform": [{
                     "calculate": `indexof(${JSON.stringify(categories)}, datum.population)`,
@@ -187,6 +198,7 @@ export const severe_spec = {
     "width": "container",
     "title": "Hospital status",
     "height": 250,
+    "resolve": {"scale": {"color": "independent"}},
     "layer": [
         {
             "mark": "line",

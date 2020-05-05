@@ -87,6 +87,7 @@
 
         }
 
+
         label,
         input {
             /* In order to define widths */
@@ -265,24 +266,26 @@
                 <div class="container">
                     <div class="card-body" id="policy-container">
                         <div class="py-3 border policy-selector">
-                            <div class="col-md-10 offset-md-2">
+                            <div class="col-md-12">
                                 <form class="was-validated trigger-form" novalidate>
                                     <fieldset class="border">
                                         <legend class="w-auto">Trigger</legend>
 
                                         <select name="trigger-variable">
-                                            <option value="Severe">Severe</option>
-                                            <option value="Dead">Dead</option>
-                                            <option value="Infected (Undetected)">Infected (Undetected)</option>
-                                            <option value="Infected (Detected)">Infected (Detected)</option>
-                                            <option value="Immune">Immune</option>
-                                            <option value="Susceptible">Susceptible</option>
+                                            <option value="time">Days since outbreak</option>
+                                            <option value="Severe">Total Severe cases</option>
+                                            <option value="Dead">Total Dead</option>
+                                            <option value="Infected (Detected)">Total Infected (Detected)</option>
+                                            <option value="Infected (Undetected)">[Total Infected (Undetected)]</option>
+                                            <option value="Immune">Total Immune</option>
+                                            <option value="Susceptible">Total Susceptible</option>
                                         </select>
                                         <select name="trigger-operator">
                                             <option value=">=">≥</option>
                                             <option value="<=">≤</option>
+                                            <option value="==">=</option>
                                         </select>
-                                        <input type="number" name="trigger-value" required>
+                                        <input type="number" name="trigger-value" min="0" required>
                                         <div class="invalid-feedback">
                                             Please enter a valid number.
                                         </div>
@@ -304,7 +307,7 @@
                                             aria-controls="form-enhanced-self-isolation" aria-selected="false">Enhanced self isolation</a>
                                     </div>
                                 </div>
-                                <div class="tab-content col-md-10">
+                                <div class="tab-content col-md-8">
                                     <div class="tab-pane active align-middle h-100">Select a policy</div>
                                     <div class="tab-pane fade" id="form-shut-workplaces" role="tabpanel" aria-labelledby="pill-shut-workplaces">
                                         <form class="was-validated policy-form" data-policy="shut-workplaces" novalidate>
@@ -417,6 +420,40 @@
                                         </form>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-md-12">
+                                <form class="was-validated shutdown-form" novalidate>
+                                    <fieldset class="border">
+                                        <legend class="w-auto">Shutdown</legend>
+
+                                        <select name="trigger-variable">
+                                            <option value="permanent">Permanent</option>
+                                            <option value="time">Days since outbreak</option>
+                                            <option value="duration">Duration (days)</option>
+                                            <option value="Severe">Total Severe cases</option>
+                                            <option value="Dead">Total Dead</option>
+                                            <option value="Infected (Detected)">Total Infected (Detected)</option>
+                                            <option value="Infected (Undetected)">[Total Infected (Undetected)]</option>
+                                            <option value="Immune">Total Immune</option>
+                                            <option value="Susceptible">Total Susceptible</option>
+                                        </select>
+                                        <select name="trigger-operator">
+                                            <option value=">=">≥</option>
+                                            <option value="<=">≤</option>
+                                            <option value="==">=</option>
+                                        </select>
+                                        <input type="number" name="trigger-value" min="0" required>
+                                        <div class="invalid-feedback">
+                                            Please enter a valid number.
+                                        </div>
+                                        <div class="form-group py-3">
+                                            <label>Make policy recurrent
+                                                <input type="checkbox" name="recurrent">
+                                            </label>
+                                        </div>
+
+                                    </fieldset>
+                                </form>
                             </div>
                             <div class="text-right pr-lg-3">
                                 <button class="btn btn-danger remove-policy">Remove policy</button>

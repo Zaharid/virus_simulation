@@ -307,6 +307,9 @@ worker.onmessage = function(e){
 		case "POLICY_APPLIED":
 			handlePolicyData(msg.args);
 			break;
+		case "POLICY_REVERSED":
+			handlePolicyData(msg.args);
+			break;
 	}
 }
 

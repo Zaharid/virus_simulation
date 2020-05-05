@@ -14,6 +14,7 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
+smallvec = "1.4.0"
 rand_distr = "0.2.2"
 serde = {version = "^1.0.59", features = ["derive"]}
 serde_derive = "^1.0.59"

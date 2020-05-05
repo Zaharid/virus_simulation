@@ -14,6 +14,7 @@ use rand::Rng;
 use rand_distr::Binomial;
 use rustc_hash::FxHashSet;
 use serde::{Deserialize, Serialize};
+use smallvec::SmallVec;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -516,6 +517,12 @@ pub struct Simulation {
     config: Config,
     max_daily_tests: usize,
     test_queue: TestQueue,
+    family_contact_undetected_coef_mod: SmallVec<[f64; 4]>,
+    family_contact_detected_coef_mod: SmallVec<[f64; 4]>,
+    workplace_contact_undetected_coef_mod: SmallVec<[f64; 4]>,
+    workplace_contact_detected_coef_mod: SmallVec<[f64; 4]>,
+    world_contact_undetected_coef_mod: SmallVec<[f64; 4]>,
+    world_contact_detected_coef_mod: SmallVec<[f64; 4]>,
     time: usize,
 }
 
@@ -600,6 +607,12 @@ impl Simulation {
         let last_disabled_workplace = 0;
         let max_daily_tests = 0;
         let test_queue = TestQueue::new(0);
+        let family_contact_undetected_coef_mod = Default::default();
+        let family_contact_detected_coef_mod = Default::default();
+        let workplace_contact_undetected_coef_mod = Default::default();
+        let workplace_contact_detected_coef_mod = Default::default();
+        let world_contact_undetected_coef_mod = Default::default();
+        let world_contact_detected_coef_mod = Default::default();
         Simulation {
             time,
             family_graph,
@@ -614,6 +627,12 @@ impl Simulation {
             test_queue,
             max_daily_tests,
             last_disabled_workplace,
+            family_contact_undetected_coef_mod,
+            family_contact_detected_coef_mod,
+            workplace_contact_undetected_coef_mod,
+            workplace_contact_detected_coef_mod,
+            world_contact_undetected_coef_mod,
+            world_contact_detected_coef_mod,
             config,
         }
     }
@@ -679,24 +698,88 @@ impl Simulation {
         self.last_disabled_workplace = (fraction * self.config.nworkplaces() as f64) as usize;
     }
 
-    pub fn multiply_undetected_world_infectability(&mut self, coef: f64) {
-        self.config.world_contact_undetected_coef *= coef;
-    }
-
-    pub fn multiply_undetected_workplace_infectability(&mut self, coef: f64) {
-        self.config.workplace_contact_undetected_coef *= coef;
+    pub fn multiply_undetected_household_infectability(&mut self, coef: f64) {
+        self.family_contact_undetected_coef_mod.push(coef);
     }
 
     pub fn multiply_detected_household_infectability(&mut self, coef: f64) {
-        self.config.family_contact_detected_coef *= coef;
+        self.family_contact_detected_coef_mod.push(coef);
+    }
+
+    pub fn multiply_undetected_workplace_infectability(&mut self, coef: f64) {
+        self.workplace_contact_undetected_coef_mod.push(coef);
     }
 
     pub fn multiply_detected_workplace_infectability(&mut self, coef: f64) {
-        self.config.workplace_contact_detected_coef *= coef;
+        self.workplace_contact_detected_coef_mod.push(coef);
+    }
+
+    pub fn multiply_undetected_world_infectability(&mut self, coef: f64) {
+        self.world_contact_undetected_coef_mod.push(coef);
     }
 
     pub fn multiply_detected_world_infectability(&mut self, coef: f64) {
-        self.config.world_contact_detected_coef *= coef;
+        self.world_contact_detected_coef_mod.push(coef);
+    }
+
+    pub fn undo_multiply_undetected_household_infectability(&mut self, coef: f64) -> bool {
+        let v = &mut self.family_contact_undetected_coef_mod;
+        if let Some(index) = v.iter().position(|&x| x == coef) {
+            v.remove(index);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn undo_multiply_detected_household_infectability(&mut self, coef: f64) -> bool {
+        let v = &mut self.family_contact_detected_coef_mod;
+        if let Some(index) = v.iter().position(|&x| x == coef) {
+            v.remove(index);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn undo_multiply_undetected_workplace_infectability(&mut self, coef: f64) -> bool {
+        let v = &mut self.workplace_contact_undetected_coef_mod;
+        if let Some(index) = v.iter().position(|&x| x == coef) {
+            v.remove(index);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn undo_multiply_detected_workplace_infectability(&mut self, coef: f64) -> bool {
+        let v = &mut self.workplace_contact_detected_coef_mod;
+        if let Some(index) = v.iter().position(|&x| x == coef) {
+            v.remove(index);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn undo_multiply_undetected_world_infectability(&mut self, coef: f64) -> bool {
+        let v = &mut self.world_contact_undetected_coef_mod;
+        if let Some(index) = v.iter().position(|&x| x == coef) {
+            v.remove(index);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn undo_multiply_detected_world_infectability(&mut self, coef: f64) -> bool {
+        let v = &mut self.world_contact_detected_coef_mod;
+        if let Some(index) = v.iter().position(|&x| x == coef) {
+            v.remove(index);
+            true
+        } else {
+            false
+        }
     }
 
     pub fn disable_fraction_of_world_connections(&mut self, frac: f64) {
@@ -729,22 +812,22 @@ impl Simulation {
         let iterdata: [Option<(&Graph, f64, f64)>; 3] = [
             Some((
                 &self.family_graph,
-                self.config.family_contact_undetected_coef,
-                self.config.family_contact_detected_coef,
+                self.get_family_contact_undetected_coef(),
+                self.get_family_contact_detected_coef(),
             )),
             if self.workplace_enabled(i) {
                 None
             } else {
                 Some((
                     &self.workplace_graph,
-                    self.config.workplace_contact_undetected_coef,
-                    self.config.workplace_contact_detected_coef,
+                    self.get_workplace_contact_undetected_coef(),
+                    self.get_workplace_contact_detected_coef(),
                 ))
             },
             Some((
                 &self.world_graph,
-                self.config.world_contact_undetected_coef,
-                self.config.world_contact_detected_coef,
+                self.get_world_contact_undetected_coef(),
+                self.get_world_contact_detected_coef(),
             )),
         ];
         for opt in iterdata.iter() {
@@ -865,7 +948,7 @@ impl Simulation {
                             *s = news;
                             n -= 1;
                             res.insert(node);
-                        } else if let State::Immune(t) = s{
+                        } else if let State::Immune(t) = s {
                             let news = State::ImmuneDetected(*t);
                             self.counter.transit(*s, news);
                             *s = news;
@@ -1003,6 +1086,59 @@ impl Simulation {
         let s = Simulation::sample_state(&opts, &w);
         self.counter.transit(State::Immune(0), s);
         s
+    }
+
+    fn transit_immune_detected(&mut self, t: usize) -> State {
+        let opts = [State::Susceptible, State::ImmuneDetected(t + 1)];
+        let w = [sat_index(&self.config.immune_susceptible_profile, t)];
+        let s = Simulation::sample_state(&opts, &w);
+        self.counter.transit(State::ImmuneDetected(0), s);
+        s
+    }
+
+    fn get_family_contact_undetected_coef(&self) -> f64 {
+        self.config.family_contact_undetected_coef
+            * self
+                .family_contact_undetected_coef_mod
+                .iter()
+                .product::<f64>()
+    }
+
+    fn get_family_contact_detected_coef(&self) -> f64 {
+        self.config.family_contact_detected_coef
+            * self
+                .family_contact_detected_coef_mod
+                .iter()
+                .product::<f64>()
+    }
+
+    fn get_workplace_contact_undetected_coef(&self) -> f64 {
+        self.config.workplace_contact_undetected_coef
+            * self
+                .workplace_contact_undetected_coef_mod
+                .iter()
+                .product::<f64>()
+    }
+
+    fn get_workplace_contact_detected_coef(&self) -> f64 {
+        self.config.workplace_contact_detected_coef
+            * self
+                .workplace_contact_detected_coef_mod
+                .iter()
+                .product::<f64>()
+    }
+
+    fn get_world_contact_undetected_coef(&self) -> f64 {
+        self.config.world_contact_undetected_coef
+            * self
+                .world_contact_undetected_coef_mod
+                .iter()
+                .product::<f64>()
+    }
+
+    fn get_world_contact_detected_coef(&self) -> f64 {
+        self.config.world_contact_detected_coef
+            * self.world_contact_detected_coef_mod.iter().product::<f64>()
     }
 }
 
