@@ -192,11 +192,23 @@ impl Graph {
             right_nodes,
         }
     }
+
+    fn with_capacity(n: usize) -> Self{
+        let left_nodes = Vec::with_capacity(n);
+        let right_nodes = Vec::with_capacity(n);
+        Graph {
+            left_nodes,
+            right_nodes,
+        }
+    }
+
+
     fn register_node(&mut self) -> usize {
         self.left_nodes.push(Default::default());
         self.right_nodes.push(Default::default());
         return self.left_nodes.len() - 1;
     }
+
     fn add_link(&mut self, i: usize, j: usize) -> Option<()> {
         if j < i {
             self.left_nodes.get_mut(i)?.insert(j);
@@ -221,6 +233,28 @@ impl Graph {
     fn iternodes(&self, n: usize) -> iter::Chain<hash_set::Iter<usize>, hash_set::Iter<usize>> {
         return self.left_nodes[n].iter().chain(self.right_nodes[n].iter());
     }
+
+    fn len(&self) -> usize{
+        self.left_nodes.len()
+    }
+
+}
+
+
+fn er_random_graph(n: usize, p: f64) -> Graph{
+    let mut rng = rand::thread_rng();
+    let mut g = Graph::with_capacity(n);
+    for i in 0..n{
+        g.register_node();
+        let nconnections = Binomial::new(i as u64, p)
+            .unwrap()
+            .sample(&mut rng) as usize;
+        let connections = rand::seq::index::sample(&mut rng, i, nconnections);
+        for c in connections.iter() {
+            g.add_link(c, i);
+        }
+    }
+    g
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -502,6 +536,22 @@ impl TestQueue {
     }
 }
 
+trait RemoveItem<T>{
+    fn remove_item(&mut self, v: &T) -> bool;
+}
+
+impl<T: PartialEq> RemoveItem<T> for SmallVec<[T;4]>
+{
+    fn remove_item(&mut self, v: &T) -> bool{
+        if let Some(index) = self.iter().position(|x| *x == *v) {
+            self.remove(index);
+            true
+        } else {
+            false
+        }
+    }
+}
+
 #[wasm_bindgen]
 pub struct Simulation {
     family_graph: Graph,
@@ -513,9 +563,7 @@ pub struct Simulation {
     infections_caused: Vec<usize>,
     r_average: Averager,
     serial_interval_average: Averager,
-    last_disabled_workplace: usize,
     config: Config,
-    max_daily_tests: usize,
     test_queue: TestQueue,
     family_contact_undetected_coef_mod: SmallVec<[f64; 4]>,
     family_contact_detected_coef_mod: SmallVec<[f64; 4]>,
@@ -523,6 +571,9 @@ pub struct Simulation {
     workplace_contact_detected_coef_mod: SmallVec<[f64; 4]>,
     world_contact_undetected_coef_mod: SmallVec<[f64; 4]>,
     world_contact_detected_coef_mod: SmallVec<[f64; 4]>,
+    world_connections_reduction_mod: SmallVec<[f64; 4]>,
+    workplace_connections_reduction_mod: SmallVec<[usize; 4]>,
+    max_daily_tests_mod: SmallVec<[usize; 4]>,
     time: usize,
 }
 
@@ -537,7 +588,6 @@ impl Simulation {
 
         let mut family_graph = Graph::new();
         let mut workplace_graph = Graph::new();
-        let mut world_graph = Graph::new();
 
         let nworkplaces = config.nworkplaces();
         let mut workplaces: Vec<Vec<usize>> = Vec::with_capacity(nworkplaces);
@@ -545,10 +595,6 @@ impl Simulation {
         workplaces.resize_with(nworkplaces, Default::default);
 
         let mut states: Vec<State> = Vec::new();
-        let world_p = f64::min(
-            (config.average_world_connections) / (config.total_population as f64),
-            1.,
-        );
 
         let mut nnodes = 0;
         while nnodes < config.total_population {
@@ -577,21 +623,18 @@ impl Simulation {
 
                 workplaces[workplace].push(g_index);
 
-                let _ = world_graph.register_node();
-                let nconnections = Binomial::new(g_index as u64, world_p)
-                    .unwrap()
-                    .sample(&mut rng) as usize;
-                let connections = rand::seq::index::sample(&mut rng, g_index, nconnections);
-                for c in connections.iter() {
-                    world_graph.add_link(c, g_index);
-                }
-
                 let s = State::Susceptible;
                 counter.register(s);
                 states.push(s);
                 nnodes += 1;
             }
         }
+
+        let world_p = f64::min(
+            (config.average_world_connections) / (nnodes as f64),
+            1.,
+        );
+        let world_graph = er_random_graph(nnodes, world_p);
 
         let initial_outbreak_size = usize::min(nnodes, config.initial_outbreak_size);
         let infected = rand::seq::index::sample(&mut rng, states.len(), initial_outbreak_size);
@@ -604,15 +647,16 @@ impl Simulation {
         let r_average = Averager::new();
         let serial_interval_average = Averager::new();
         let time = 0;
-        let last_disabled_workplace = 0;
-        let max_daily_tests = 0;
         let test_queue = TestQueue::new(0);
+        let max_daily_tests_mod = Default::default();
         let family_contact_undetected_coef_mod = Default::default();
         let family_contact_detected_coef_mod = Default::default();
         let workplace_contact_undetected_coef_mod = Default::default();
         let workplace_contact_detected_coef_mod = Default::default();
         let world_contact_undetected_coef_mod = Default::default();
         let world_contact_detected_coef_mod = Default::default();
+        let world_connections_reduction_mod = Default::default();
+        let workplace_connections_reduction_mod = Default::default();
         Simulation {
             time,
             family_graph,
@@ -625,14 +669,15 @@ impl Simulation {
             serial_interval_average,
             states,
             test_queue,
-            max_daily_tests,
-            last_disabled_workplace,
+            max_daily_tests_mod,
             family_contact_undetected_coef_mod,
             family_contact_detected_coef_mod,
             workplace_contact_undetected_coef_mod,
             workplace_contact_detected_coef_mod,
             world_contact_undetected_coef_mod,
             world_contact_detected_coef_mod,
+            workplace_connections_reduction_mod,
+            world_connections_reduction_mod,
             config,
         }
     }
@@ -695,7 +740,12 @@ impl Simulation {
     }
 
     pub fn disable_fraction_of_workplaces(&mut self, fraction: f64) {
-        self.last_disabled_workplace = (fraction * self.config.nworkplaces() as f64) as usize;
+        self.workplace_connections_reduction_mod.push((fraction * self.config.nworkplaces() as f64) as usize);
+    }
+
+    pub fn undo_disable_fraction_of_workplaces(&mut self, fraction: f64) -> bool {
+        let index = (fraction * self.config.nworkplaces() as f64) as usize;
+        self.workplace_connections_reduction_mod.remove_item(&index)
     }
 
     pub fn multiply_undetected_household_infectability(&mut self, coef: f64) {
@@ -723,87 +773,83 @@ impl Simulation {
     }
 
     pub fn undo_multiply_undetected_household_infectability(&mut self, coef: f64) -> bool {
-        let v = &mut self.family_contact_undetected_coef_mod;
-        if let Some(index) = v.iter().position(|&x| x == coef) {
-            v.remove(index);
-            true
-        } else {
-            false
-        }
+        self.family_contact_undetected_coef_mod.remove_item(&coef)
     }
 
     pub fn undo_multiply_detected_household_infectability(&mut self, coef: f64) -> bool {
-        let v = &mut self.family_contact_detected_coef_mod;
-        if let Some(index) = v.iter().position(|&x| x == coef) {
-            v.remove(index);
-            true
-        } else {
-            false
-        }
+        self.family_contact_detected_coef_mod.remove_item(&coef)
     }
 
     pub fn undo_multiply_undetected_workplace_infectability(&mut self, coef: f64) -> bool {
-        let v = &mut self.workplace_contact_undetected_coef_mod;
-        if let Some(index) = v.iter().position(|&x| x == coef) {
-            v.remove(index);
-            true
-        } else {
-            false
-        }
+        self.workplace_contact_undetected_coef_mod.remove_item(&coef)
     }
 
     pub fn undo_multiply_detected_workplace_infectability(&mut self, coef: f64) -> bool {
-        let v = &mut self.workplace_contact_detected_coef_mod;
-        if let Some(index) = v.iter().position(|&x| x == coef) {
-            v.remove(index);
-            true
-        } else {
-            false
-        }
+        self.workplace_contact_detected_coef_mod.remove_item(&coef)
     }
 
     pub fn undo_multiply_undetected_world_infectability(&mut self, coef: f64) -> bool {
-        let v = &mut self.world_contact_undetected_coef_mod;
-        if let Some(index) = v.iter().position(|&x| x == coef) {
-            v.remove(index);
-            true
-        } else {
-            false
-        }
+        self.world_contact_undetected_coef_mod.remove_item(&coef)
     }
 
     pub fn undo_multiply_detected_world_infectability(&mut self, coef: f64) -> bool {
-        let v = &mut self.world_contact_detected_coef_mod;
-        if let Some(index) = v.iter().position(|&x| x == coef) {
-            v.remove(index);
-            true
-        } else {
-            false
-        }
+        self.world_contact_detected_coef_mod.remove_item(&coef)
     }
 
     pub fn disable_fraction_of_world_connections(&mut self, frac: f64) {
-        let mut rng = rand::thread_rng();
-        // Find a better algorithm
-        let mut to_remove: FxHashSet<usize> = Default::default();
-        // This needs to be indexes because of the borrow checker
-        for i in 0..self.world_graph.left_nodes.len() {
-            for j in self.world_graph.left_nodes[i].iter() {
-                if frac > rng.gen() {
-                    to_remove.insert(*j);
-                }
-            }
-            for j in to_remove.iter() {
-                self.world_graph.remove_link(i, *j);
-            }
-
-            to_remove.clear();
+        log!("Enter apply function: frac, {}", frac);
+        let currmax = if self.world_connections_reduction_mod.is_empty(){
+            0.
+        }else{
+            self.world_connections_reduction_mod.iter().fold(-f64::INFINITY, |a, &b| f64::max(a, b))
+        };
+        if frac > currmax{
+            let n = self.world_graph.len();
+            let p = f64::min(
+                (1.-frac)*(self.config.average_world_connections) / (n as f64),
+                1.);
+            log!("Rebuilding graph n {} p {}", n, p);
+            self.world_graph = er_random_graph(n, p);
         }
+        self.world_connections_reduction_mod.push(frac);
+    }
+
+    pub fn undo_disable_fraction_of_world_connections(&mut self, frac: f64) -> bool {
+        log!("Enter undo function: frac, {}", frac);
+        if !self.world_connections_reduction_mod.remove_item(&frac){
+            return false
+        }
+        let currmax = if self.world_connections_reduction_mod.is_empty(){
+            0.
+        }else{
+            self.world_connections_reduction_mod.iter().fold(-f64::INFINITY, |a, &b| f64::max(a, b))
+        };
+        log!("currmax, {}", currmax);
+        if currmax < frac{
+            let n = self.world_graph.len();
+            let p = f64::min(
+                (1.-currmax)*(self.config.average_world_connections) / (n as f64),
+                1.);
+
+            log!("Rebuilding graph n {} p {}", n, p);
+            self.world_graph = er_random_graph(n, p);
+        }
+        true
     }
 
     pub fn set_max_contact_tracing(&mut self, max: usize) {
-        self.test_queue.maxsize = max * 3;
-        self.max_daily_tests = max;
+        let oldmax = self.get_max_daily_tests();
+        if max > oldmax{
+            self.test_queue.maxsize = max * 3;
+        }
+        self.max_daily_tests_mod.push(max);
+    }
+
+    pub fn undo_set_max_contact_tracing(&mut self, max: usize) -> bool{
+        let ret = self.max_daily_tests_mod.remove_item(&max);
+        let newmax = self.get_max_daily_tests();
+        self.test_queue.maxsize = newmax*3;
+        return ret;
     }
 }
 
@@ -857,11 +903,19 @@ impl Simulation {
     }
 
     fn workplace_enabled(&self, i: usize) -> bool {
-        self.worker_workplaces[i] < self.last_disabled_workplace
+        if let Some(val) = self.workplace_connections_reduction_mod.iter().max(){
+            self.worker_workplaces[i] < *val
+        }else{
+            true
+        }
     }
 
     fn hospitals_full(&self) -> bool {
         self.counter.state_count(State::Severe(0)) >= self.config.hospital_capacity as i32
+    }
+
+    fn get_max_daily_tests(&self) -> usize{
+        *self.max_daily_tests_mod.iter().max().unwrap_or(&0)
     }
 
     fn sample_state(states: &[State], weights: &[f64]) -> State {
@@ -908,7 +962,7 @@ impl Simulation {
     ) -> (FxHashSet<usize>, FxHashSet<usize>) {
         let mut res: FxHashSet<usize> = Default::default();
         let mut recently_tested: FxHashSet<usize> = Default::default();
-        let mut n = self.max_daily_tests;
+        let mut n = self.get_max_daily_tests();
         if n <= 0 {
             return (res, recently_tested);
         }

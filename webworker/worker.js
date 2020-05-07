@@ -115,20 +115,17 @@ function runPolicy(policy, data){
 function reversePolicy(policy, data){
 	switch (policy){
 		case "shut-workplaces":
-            //TODO
-			//simulation.disable_fraction_of_workplaces(data.workplaces);
+			simulation.undo_disable_fraction_of_workplaces(data.workplaces);
 			break
 		case "social-distancing":
 			simulation.undo_multiply_undetected_workplace_infectability(1 - data["workplace-reduction"]);
 			simulation.undo_multiply_undetected_world_infectability(1 - data["world-reduction"]);
 			break
         case "lockdown":
-            //TODO
-            //simulation.disable_fraction_of_world_connections(data["connections_cut_fraction"])
+            simulation.undo_disable_fraction_of_world_connections(data["connections_cut_fraction"])
             break
         case "contact-tracing":
-            //TODO
-            //simulation.set_max_contact_tracing(data["max_daily_tests"]);
+            simulation.undo_set_max_contact_tracing(data["max_daily_tests"]);
             break;
         case "enhanced-self-isolation":
             simulation.undo_multiply_detected_household_infectability(1 - data["household-reduction"]);
