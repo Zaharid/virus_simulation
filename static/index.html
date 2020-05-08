@@ -232,22 +232,31 @@
                         <p>The simulation allows for the possibility of immune agents losing their immunity and becoming immune again. This is parametrized by a <a class="anchor-link"
                                 href="#immune_susceptible_profile">daily probability</a> of becoming Susceptible as a function of the number of days since infection.</p>
                         <h3 id="policy-choices">Policy choices</h3>
-                        <p>The simulation allows to estimate the effects of policies that influence the disease propagation and are implemented as a response to various events. Specifically policies can be triggered as a response of agents in a given state (for example Detected cases, Severe patients that need hospitalization or Dead agents) exceeding (or, alternatively, falling short of) a threshold set by the user.</p>
+                        <p>The simulation allows to estimate the effects of policies that influence the disease propagation and are implemented and shut down as a response to various events.</p>
+                        <p>Specifically policies can be triggered on a specific day or, alternatively, when a specified number of agents reaches a given state either exceeds or falls below a threshold set by the user.</p>
+                        <p>Optionally policies can also be cancelled, either after having been applied for a certain duration, or when a certain event is met.</p>
+                        <p>The <em>Make policy recurrent</em> option causes the policy to be scheduled again after it has been shut down. It will become enacted when it’s trigger condition is met.</p>
+                        <p>Several policies, including of the same kind can be in effect concurrently.</p>
                         <p>The policies are configurable through the set policies menu <a
                                 class="anchor-link" data-target="#policy-collapse" href="#policy-lead">Set policies menu</a>. The currently available policies are described next.</p>
                         <h4 id="shut-workplace">Shut workplace</h4>
                         <p>A given percentage of workplaces shut down completely and workplace virus transition trough them is eliminated.</p>
+                        <p>Concurrent applications of this policy cause the maximum number of workplaces implied by any of the policies to remain shut. For example if two <em>Shut workplaces</em> policies are active at the same time, one closing down 30% and the other 70%, then 70% of the workplaces will be closed.</p>
                         <h4 id="social-distancing">Social distancing</h4>
                         <p>The propagation of the disease is reduced for Workplace and World interactions by an amount set by the user. This affects only the propagation by Undetected agents, but not by Detected ones.</p>
+                        <p>Concurrent applications of the policy will cause the reduction factors to be multiplied: For example, if two policies are active, one reducing some the propagation mode by 20% and the other reducing it by 10%, then the overall reduction will be 28%.</p>
                         <h4 id="enhanced-self-isolation">Enhanced self isolation</h4>
                         <p>The propagation of the disease is reduced in interactions with Detected agents, by an amount set by the user.</p>
+                        <p>Concurrent applications of the policy will cause the reduction factors to be multiplied: For example, if two policies are active, one reducing some the propagation mode by 20% and the other reducing it by 10%, then the overall reduction will be 28%.</p>
                         <h4 id="lockdown">Lockdown</h4>
                         <p>Social contacts are reduced, resulting in a fraction of the World connections being disabled.</p>
+                        <p>When this policy is reversed, the World graph will be reconstructed anew. Concurrent applications result in the maximum reduction factor being in place. The World graph will be renewed every time the policy changes.</p>
                         <h4 id="contact-tracing">Contact tracing</h4>
                         <p>Reveal Infected agents among the contacts of each new Detected agent and in turn transform them into Detected. The maximum number of daily tests is limited and can be set by the user.</p>
                         <p>The tracing works by maintaining a queue of agents to be tested. Each appearance of a Detected agents causes their contacts to be added to the queue. Household contacts are given priority with respect to Workplace contacts, and both are given priority with respect to World contacts. Only Susceptible, Immune (Undetected) and Infected (Undetected) agents are added to the queue.</p>
                         <p>On each day, contacts are pulled from the queue in order of priority, until the queue is empty or the daily test limit is reached. Infected (Undetected) contacts that are selected will become Infected (Detected). Immune (Undetected) contacts become Immune (Detected). Their contacts are subsequently added to the queue, but not tested until the next day. Susceptible agents that get tested will not be tested again for three days.</p>
                         <p>The contacts that are not selected remain in the queue with the same priority. The size of the queue is limited to three times the maximum size. Higher priority contacts will evict lower priority ones when the maximum size is reached.</p>
+                        <p>Concurrent applications of this policy result in the maximum number of tests adding up among those specified by each active policy.</p>
                         <h3 id="technical-details">Technical details</h3>
                         <p>The code of the simulation can be found here:</p>
                         <p><a href="https://github.com/Zaharid/virus_simulation/" class="uri">https://github.com/Zaharid/virus_simulation/</a></p>
@@ -380,8 +389,8 @@
                                     <div class="tab-pane fade" id="form-enhanced-self-isolation" role="tabpanel" aria-labelledby="pill-enhanced-self-isolation">
                                         <form class="was-validated policy-form" data-policy="enhanced-self-isolation" novalidate>
                                             <fieldset class="border">
+                                                <legend class="w-auto">Enhanced self isolation</legend>
                                                 <div class="container-fluid">
-                                                    <legend class="w-auto">Enhanced self isolation</legend>
                                                     <div class="row">
                                                         <div class="col-lg-4">
                                                             <label>Household Infectability reduction percentage
@@ -447,8 +456,8 @@
                                             Please enter a valid number.
                                         </div>
                                         <div class="form-group py-3">
-                                            <label>Make policy recurrent
-                                                <input type="checkbox" name="recurrent">
+                                            <label>Make policy recurrent ️
+                                                <input type="checkbox" title="Schedule policy again after it has been cancelled" name="recurrent">
                                             </label>
                                         </div>
 

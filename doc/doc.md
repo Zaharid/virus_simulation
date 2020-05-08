@@ -251,11 +251,20 @@ as a function of the number of days since infection.
 ### Policy choices
 
 The simulation allows to estimate the effects of policies that influence the
-disease propagation and are implemented as a response to various events.
-Specifically policies can be triggered as a response of agents in a given state
-(for example Detected cases, Severe patients that need hospitalization or Dead
-agents) exceeding (or, alternatively, falling short of) a threshold set by the
-user.
+disease propagation and are implemented and shut down as a response to various events.
+
+Specifically policies can be triggered on a specific day or, alternatively, when
+a specified number of agents reaches a given state either exceeds or falls below
+a threshold set by the user.
+
+Optionally policies can also be cancelled, either after having been applied for
+a certain duration, or when a certain event is met.
+
+The *Make policy recurrent* option causes the policy to be scheduled again after
+it has been shut down. It will become enacted when it's trigger condition is
+met.
+
+Several policies, including of the same kind can be in effect concurrently.
 
 The policies are configurable through the set policies menu <a
 class="anchor-link" data-target="#policy-collapse" href="#policy-lead">Set policies menu</a>.  The currently
@@ -267,21 +276,40 @@ available policies are described next.
 A given percentage of workplaces shut down completely and workplace virus
 transition trough them is eliminated.
 
+Concurrent applications of this policy cause the maximum number of workplaces
+implied by any of the policies to remain shut. For example if two *Shut
+workplaces* policies are active at the same time, one closing down 30% and the
+other 70%, then 70% of the workplaces will be closed.
+
 #### Social distancing
 
 The propagation of the disease is reduced for Workplace and World interactions
 by an amount set by the user. This affects only the propagation by Undetected
 agents, but not by Detected ones.
 
+Concurrent applications of the policy will cause the reduction factors to be
+multiplied: For example, if two policies are active, one reducing some the
+propagation mode by 20% and the other reducing it by 10%, then the overall
+reduction will be 28%.
+
 #### Enhanced self isolation
 
 The propagation of the disease is reduced in interactions with Detected agents,
 by an amount set by the user.
 
+Concurrent applications of the policy will cause the reduction factors to be
+multiplied: For example, if two policies are active, one reducing some the
+propagation mode by 20% and the other reducing it by 10%, then the overall
+reduction will be 28%.
+
 #### Lockdown
 
 Social contacts are reduced, resulting in a fraction of the World connections
 being disabled.
+
+When this policy is reversed, the World graph will be reconstructed anew.
+Concurrent applications result in the maximum reduction factor being in place.
+The World graph will be renewed every time the policy changes.
 
 #### Contact tracing
 
@@ -306,6 +334,9 @@ The contacts that are not selected remain in the queue with the same priority.
 The size of the queue is limited to three times the maximum size. Higher
 priority contacts will evict lower priority ones when the maximum size is
 reached.
+
+Concurrent applications of this policy result in the maximum number of tests
+adding up among those specified by each active policy.
 
 ### Technical details
 
